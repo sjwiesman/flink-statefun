@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.flink.statefun.flink.state.processor.table;
 
 import java.io.IOException;
@@ -6,7 +23,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.apache.flink.api.common.functions.AbstractRichFunction;
 import org.apache.flink.api.common.functions.RichFunction;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -30,10 +46,11 @@ import org.apache.flink.statefun.sdk.state.PersistedValue;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+/** An operator for reading persisted values from a stateful functions application. */
 public class StatefulFunctionStateReaderOperator
     extends StateReaderOperator<RichFunction, String, VoidNamespace, Row> {
 
-  private final Map<String, Class<?>> persistedValues;
+  private final List<PersistedValue<Object>> persistedValues;
 
   private final boolean disableMultiplexedState;
 
@@ -45,7 +62,7 @@ public class StatefulFunctionStateReaderOperator
 
   StatefulFunctionStateReaderOperator(
       FunctionType functionType,
-      Map<String, Class<?>> persistedValues,
+      List<PersistedValue<Object>> persistedValues,
       boolean disableMultiplexedState) {
     super(new RuntimeCapture(), Types.STRING, VoidNamespaceSerializer.INSTANCE);
     this.functionType = functionType;
@@ -88,10 +105,8 @@ public class StatefulFunctionStateReaderOperator
     }
 
     accessors = new ArrayList<>();
-    for (Map.Entry<String, Class<?>> entry : persistedValues.entrySet()) {
-      accessors.add(
-          state.createFlinkStateAccessor(
-              functionType, PersistedValue.of(entry.getKey(), entry.getValue())));
+    for (PersistedValue<Object> persistedValue : persistedValues) {
+      accessors.add(state.createFlinkStateAccessor(functionType, persistedValue));
     }
   }
 
@@ -112,7 +127,7 @@ public class StatefulFunctionStateReaderOperator
       row.setField(i++, accessor.get());
     }
 
-    // Because states are multiplexed
+    // When states are multiplexed
     // the only way to know if a particular
     // key is valid for the current function
     // type is to check if it contains a non null
@@ -141,12 +156,12 @@ public class StatefulFunctionStateReaderOperator
     }
 
     public Tuple2<String, VoidNamespace> next() {
-      String key = this.keys.next();
+      String key = keys.next();
       return Tuple2.of(key, VoidNamespace.INSTANCE);
     }
 
     public void remove() {
-      this.keys.remove();
+      keys.remove();
     }
   }
 

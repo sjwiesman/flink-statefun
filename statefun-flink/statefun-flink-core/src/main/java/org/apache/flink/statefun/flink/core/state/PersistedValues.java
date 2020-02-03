@@ -29,9 +29,9 @@ import javax.annotation.Nullable;
 import org.apache.flink.statefun.sdk.annotations.Persisted;
 import org.apache.flink.statefun.sdk.state.PersistedValue;
 
-final class PersistedValues {
+public final class PersistedValues {
 
-  static List<PersistedValue<Object>> findReflectively(@Nullable Object instance) {
+  public static List<PersistedValue<Object>> findReflectively(@Nullable Object instance) {
     PersistedValues visitor = new PersistedValues();
     visitor.visit(instance);
     return visitor.getPersistedValues();
