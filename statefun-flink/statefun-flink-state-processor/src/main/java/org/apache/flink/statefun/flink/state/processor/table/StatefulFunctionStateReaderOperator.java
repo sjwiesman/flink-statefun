@@ -72,7 +72,6 @@ public class StatefulFunctionStateReaderOperator
     super.open();
 
     if (disableMultiplexedState) {
-
       state =
           new FlinkState(
               function.getRuntimeContext(),
@@ -125,7 +124,8 @@ public class StatefulFunctionStateReaderOperator
 
   @Override
   public Iterator<Tuple2<String, VoidNamespace>> getKeysAndNamespaces(SavepointRuntimeContext ctx) {
-    Iterator<String> keys = new MultiStateKeyIterator<>(ctx.getStateDescriptors(), getKeyedStateBackend());
+    Iterator<String> keys =
+        new MultiStateKeyIterator<>(ctx.getStateDescriptors(), getKeyedStateBackend());
     return new NamespaceDecorator(keys);
   }
 

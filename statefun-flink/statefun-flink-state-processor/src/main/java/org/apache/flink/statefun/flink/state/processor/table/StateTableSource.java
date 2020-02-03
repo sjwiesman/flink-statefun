@@ -25,6 +25,8 @@ import org.apache.flink.util.Preconditions;
 
 public class StateTableSource extends InputFormatTableSource<Row> {
 
+  private static final String FUNCTION_ID_COLUMN_NAME = "function_id";
+
   private final Map<String, Class<?>> values;
 
   private final OperatorState state;
@@ -59,12 +61,12 @@ public class StateTableSource extends InputFormatTableSource<Row> {
   @Override
   @SuppressWarnings("deprecation")
   public TableSchema getTableSchema() {
-    TableSchema.Builder schema = TableSchema.builder().field("function_id", Types.STRING);
+    TableSchema.Builder schema = TableSchema.builder().field(FUNCTION_ID_COLUMN_NAME, Types.STRING);
     for (Map.Entry<String, Class<?>> entry : values.entrySet()) {
       schema = schema.field(entry.getKey(), TypeInformation.of(entry.getValue()));
     }
 
-    return schema.build();
+    return schema.primaryKey(FUNCTION_ID_COLUMN_NAME).build();
   }
 
   public static Builder analyze(String savepointPath) throws IOException {
