@@ -33,21 +33,27 @@ public class StateTableSource extends InputFormatTableSource<Row> {
 
   private final FunctionType functionType;
 
+  private final boolean disableMultiplexedState;
+
   private StateTableSource(
       Map<String, Class<?>> values,
       OperatorState state,
       StateBackend stateBackend,
-      FunctionType functionType) {
+      FunctionType functionType,
+      boolean disableMultiplexedState) {
     this.values = values;
     this.state = state;
     this.stateBackend = stateBackend;
     this.functionType = functionType;
+    this.disableMultiplexedState = disableMultiplexedState;
   }
 
   @Override
   public InputFormat<Row, ?> getInputFormat() {
     return new KeyedStateInputFormat<>(
-        state, stateBackend, new StatefulFunctionStateReaderOperator(functionType, values));
+        state,
+        stateBackend,
+        new StatefulFunctionStateReaderOperator(functionType, values, disableMultiplexedState));
   }
 
   @Override
@@ -94,6 +100,8 @@ public class StateTableSource extends InputFormatTableSource<Row> {
 
     private StateBackend stateBackend;
 
+    private boolean disableMultiplexedState = false;
+
     private Builder(OperatorState state) {
       this.state = state;
     }
@@ -118,11 +126,17 @@ public class StateTableSource extends InputFormatTableSource<Row> {
       return this;
     }
 
+    public Builder disableMultiplexedState() {
+      this.disableMultiplexedState = true;
+      return this;
+    }
+
     public StateTableSource build() {
       Preconditions.checkArgument(!values.isEmpty());
       Preconditions.checkNotNull(stateBackend);
 
-      return new StateTableSource(values, state, stateBackend, functionType);
+      return new StateTableSource(
+          values, state, stateBackend, functionType, disableMultiplexedState);
     }
   }
 }

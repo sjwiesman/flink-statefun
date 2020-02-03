@@ -14,9 +14,11 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.runtime.state.KeyedStateBackend;
 import org.apache.flink.runtime.state.VoidNamespace;
 import org.apache.flink.runtime.state.VoidNamespaceSerializer;
+import org.apache.flink.state.api.input.MultiStateKeyIterator;
 import org.apache.flink.state.api.input.operator.StateReaderOperator;
 import org.apache.flink.state.api.runtime.SavepointRuntimeContext;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryType;
+import org.apache.flink.statefun.flink.core.state.FlinkState;
 import org.apache.flink.statefun.flink.core.state.MultiplexedState;
 import org.apache.flink.statefun.flink.core.state.State;
 import org.apache.flink.statefun.flink.core.types.DynamicallyRegisteredTypes;
@@ -33,6 +35,8 @@ public class StatefulFunctionStateReaderOperator
 
   private final Map<String, Class<?>> persistedValues;
 
+  private final boolean disableMultiplexedState;
+
   private transient FunctionType functionType;
 
   private transient State state;
@@ -40,10 +44,13 @@ public class StatefulFunctionStateReaderOperator
   private transient List<Accessor<?>> accessors;
 
   StatefulFunctionStateReaderOperator(
-      FunctionType functionType, Map<String, Class<?>> persistedValues) {
+      FunctionType functionType,
+      Map<String, Class<?>> persistedValues,
+      boolean disableMultiplexedState) {
     super(new RuntimeCapture(), Types.STRING, VoidNamespaceSerializer.INSTANCE);
     this.functionType = functionType;
     this.persistedValues = persistedValues;
+    this.disableMultiplexedState = disableMultiplexedState;
   }
 
   @SuppressWarnings("unused")
@@ -64,12 +71,22 @@ public class StatefulFunctionStateReaderOperator
   public void open() throws Exception {
     super.open();
 
-    state =
-        new MultiplexedState(
-            function.getRuntimeContext(),
-            (KeyedStateBackend<Object>) (Object) getKeyedStateBackend(),
-            new DynamicallyRegisteredTypes(
-                new StaticallyRegisteredTypes(MessageFactoryType.WITH_RAW_PAYLOADS)));
+    if (disableMultiplexedState) {
+
+      state =
+          new FlinkState(
+              function.getRuntimeContext(),
+              (KeyedStateBackend<Object>) (Object) getKeyedStateBackend(),
+              new DynamicallyRegisteredTypes(
+                  new StaticallyRegisteredTypes(MessageFactoryType.WITH_RAW_PAYLOADS)));
+    } else {
+      state =
+          new MultiplexedState(
+              function.getRuntimeContext(),
+              (KeyedStateBackend<Object>) (Object) getKeyedStateBackend(),
+              new DynamicallyRegisteredTypes(
+                  new StaticallyRegisteredTypes(MessageFactoryType.WITH_RAW_PAYLOADS)));
+    }
 
     accessors = new ArrayList<>();
     for (Map.Entry<String, Class<?>> entry : persistedValues.entrySet()) {
@@ -108,8 +125,7 @@ public class StatefulFunctionStateReaderOperator
 
   @Override
   public Iterator<Tuple2<String, VoidNamespace>> getKeysAndNamespaces(SavepointRuntimeContext ctx) {
-    Iterator<String> keys =
-        getKeyedStateBackend().getKeys("state", VoidNamespace.INSTANCE).iterator();
+    Iterator<String> keys = new MultiStateKeyIterator<>(ctx.getStateDescriptors(), getKeyedStateBackend());
     return new NamespaceDecorator(keys);
   }
 
