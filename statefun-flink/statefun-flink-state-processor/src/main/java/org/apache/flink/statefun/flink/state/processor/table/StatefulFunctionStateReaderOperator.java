@@ -87,11 +87,23 @@ public class StatefulFunctionStateReaderOperator
     row.setField(0, key);
 
     int i = 1;
+    boolean nonNull = false;
     for (Accessor<?> accessor : accessors) {
+      Object field = accessor.get();
+      if (field != null) {
+        nonNull = true;
+      }
       row.setField(i++, accessor.get());
     }
 
-    collector.collect(row);
+    // Because states are multiplexed
+    // the only way to know if a particular
+    // key is valid for the current function
+    // type is to check if it contains a non null
+    // persisted value.
+    if (nonNull) {
+      collector.collect(row);
+    }
   }
 
   @Override

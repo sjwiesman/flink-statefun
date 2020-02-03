@@ -108,7 +108,7 @@ public class StateTableSource extends InputFormatTableSource<Row> {
       return this;
     }
 
-    public Builder withRocksDb() {
+    public Builder withRocksDBStateBackend() {
       stateBackend = new RocksDBStateBackend((StateBackend) new MemoryStateBackend());
       return this;
     }
