@@ -1,0 +1,99 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+syntax = "proto3";
+
+package org.apache.flink.statefun.training.modelserving;
+
+option java_package = "org.apache.flink.statefun.training.modelserving.generated";
+option java_multiple_files = true;
+
+//-------------------------------
+// External Messages
+//-------------------------------
+
+// A transaction event generated each time
+// an account transaction occurs
+message Transaction {
+    string transaction_id = 1;
+    string account = 2;
+    string merchant_id  = 3;
+    double amount  = 4;
+}
+
+// A fraudulent event has been
+// reported by the account holder
+message ConfirmedFraud {
+    string account = 1;
+}
+
+// The final score result
+// generated for each
+// transaction
+message TransactionScore {
+    string transaction_id = 1;
+    string account_id     = 2;
+    double score          = 3;
+}
+
+//-------------------------------
+// Internal Messages
+//-------------------------------
+
+// Represents a fired timer
+// with no additional context
+message Timeout {
+}
+
+// A request to query a particular
+// merchants score
+message QueryMerchant {
+}
+
+// The fraud score for a particular
+// merchant.
+message MerchantScore {
+    double score = 1;
+}
+
+// A request to query the
+// number of confirmed fraudulent
+// transactions against a user.
+message QueryHistory {
+}
+
+// The number of confirmed fraudulent
+// transactions for an account
+// over the last 30 days
+message FraudHistory {
+    int32 count = 1;
+}
+
+// The feature vector to be scored
+message FeatureVector {
+    Transaction transaction = 1;
+    double merchant_fraud   = 2;
+    double fraud_history    = 3;
+}
+
+
+
+
+
+
+
+
