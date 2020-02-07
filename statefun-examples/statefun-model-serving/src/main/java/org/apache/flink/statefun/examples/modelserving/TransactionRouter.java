@@ -7,6 +7,6 @@ public class TransactionRouter implements Router<Transaction> {
 
   @Override
   public void route(Transaction message, Downstream<Transaction> downstream) {
-    downstream.forward(IDs.ACCOUNT, message.getAccount(), message);
+    downstream.forward(identifiers.ACCOUNT, message.getAccount(), message);
   }
 }

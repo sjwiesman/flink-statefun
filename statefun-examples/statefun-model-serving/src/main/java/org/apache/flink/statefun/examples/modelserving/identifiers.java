@@ -6,7 +6,7 @@ import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.flink.statefun.training.modelserving.generated.Transaction;
 import org.apache.flink.statefun.training.modelserving.generated.TransactionScore;
 
-public class IDs {
+public class identifiers {
 
   public static final IngressIdentifier<Transaction> TRANSACTIONS =
       new IngressIdentifier<>(Transaction.class, "apache/flink", "transactions");

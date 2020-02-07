@@ -1,6 +1,6 @@
 package org.apache.flink.statefun.examples.modelserving.functions;
 
-import org.apache.flink.statefun.examples.modelserving.IDs;
+import org.apache.flink.statefun.examples.modelserving.identifiers;
 import org.apache.flink.statefun.examples.modelserving.util.UnsupportedTypeException;
 import org.apache.flink.statefun.sdk.Context;
 import org.apache.flink.statefun.sdk.StatefulFunction;
@@ -11,6 +11,9 @@ import org.apache.flink.statefun.training.modelserving.generated.FraudHistory;
 import org.apache.flink.statefun.training.modelserving.generated.QueryHistory;
 import org.apache.flink.statefun.training.modelserving.generated.QueryMerchant;
 import org.apache.flink.statefun.training.modelserving.generated.Transaction;
+
+import static org.apache.flink.statefun.examples.modelserving.identifiers.ACCOUNT;
+import static org.apache.flink.statefun.examples.modelserving.identifiers.MERCHANT;
 
 public class FnTransaction implements StatefulFunction {
 
@@ -35,8 +38,8 @@ public class FnTransaction implements StatefulFunction {
       countDown.set(2);
       transactionState.set(transaction);
 
-      context.send(IDs.ACCOUNT, transaction.getAccount(), QueryHistory.getDefaultInstance());
-      context.send(IDs.MERCHANT, transaction.getMerchantId(), QueryMerchant.getDefaultInstance());
+      context.send(ACCOUNT, transaction.getAccount(), QueryHistory.getDefaultInstance());
+      context.send(MERCHANT, transaction.getMerchantId(), QueryMerchant.getDefaultInstance());
 
       return;
     }
@@ -66,7 +69,7 @@ public class FnTransaction implements StatefulFunction {
             .setFraudHistory(accountHistory.get())
             .build();
 
-    context.send(IDs.SCORER, vector.getTransaction().getAccount(), vector);
+    context.send(identifiers.SCORER, vector.getTransaction().getAccount(), vector);
 
     countDown.clear();
     accountHistory.clear();

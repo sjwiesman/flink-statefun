@@ -7,6 +7,8 @@ import org.apache.flink.statefun.sdk.StatefulFunction;
 import org.apache.flink.statefun.training.modelserving.generated.FeatureVector;
 import org.apache.flink.statefun.training.modelserving.generated.TransactionScore;
 
+import static org.apache.flink.statefun.examples.modelserving.identifiers.SCORE;
+
 /** This function should be Python. */
 public class PythonScoringFunction implements StatefulFunction {
 
@@ -23,7 +25,7 @@ public class PythonScoringFunction implements StatefulFunction {
             .setScore(model.nextDouble())
             .build();
 
-    context.send(IDs.SCORE, score);
+    context.send(SCORE, score);
   }
 
   private FeatureVector unwrap(Object input) {
