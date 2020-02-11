@@ -1,10 +1,11 @@
 package com.ververica.statefun.workshop.functions;
 
-import static com.ververica.statefun.workshop.identifiers.MERCHANT_TYPE;
+import static com.ververica.statefun.workshop.identifiers.MERCHANT_FN;
 import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.ververica.statefun.workshop.generated.CheckMerchantScore;
+import com.ververica.statefun.workshop.generated.MerchantResult;
 import com.ververica.statefun.workshop.generated.ReportedMerchantScore;
 import com.ververica.statefun.workshop.utils.QueryService;
 import org.apache.flink.statefun.sdk.Address;
@@ -24,33 +25,51 @@ public class MerchantFunctionTest {
   @Test
   public void testAsyncOperation() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(new TestProvider(), MERCHANT_TYPE, SELF_ID);
+        FunctionTestHarness.test(new TestProvider(), MERCHANT_FN, SELF_ID);
 
     Assert.assertThat(
-        harness.invoke(CALLER, CheckMerchantScore.newBuilder().setMerchantId(SELF_ID).build()),
-        sent(messagesTo(CALLER, equalTo(ReportedMerchantScore.newBuilder().setScore(1).build()))));
+        harness.invoke(CALLER, CheckMerchantScore.newBuilder().build()),
+        sent(
+            messagesTo(
+                CALLER,
+                equalTo(
+                    ReportedMerchantScore.newBuilder()
+                        .setStatus(MerchantResult.SCORED)
+                        .setScore(1)
+                        .build()))));
   }
 
   @Test
   public void testSingleFailureOperation() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(new TestProviderWithSingleFailure(), MERCHANT_TYPE, SELF_ID);
+        FunctionTestHarness.test(new TestProviderWithSingleFailure(), MERCHANT_FN, SELF_ID);
 
     Assert.assertThat(
-        harness.invoke(CALLER, CheckMerchantScore.newBuilder().setMerchantId(SELF_ID).build()),
-        sent(messagesTo(CALLER, equalTo(ReportedMerchantScore.newBuilder().setScore(1).build()))));
+        harness.invoke(CALLER, CheckMerchantScore.newBuilder().build()),
+        sent(
+            messagesTo(
+                CALLER,
+                equalTo(
+                    ReportedMerchantScore.newBuilder()
+                        .setStatus(MerchantResult.SCORED)
+                        .setScore(1)
+                        .build()))));
   }
 
   @Test
   public void testAsyncFailure() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(new TestProviderWithMultipleFailures(), MERCHANT_TYPE, SELF_ID);
+        FunctionTestHarness.test(new TestProviderWithMultipleFailures(), MERCHANT_FN, SELF_ID);
 
     Assert.assertThat(
-        harness.invoke(CALLER, CheckMerchantScore.newBuilder().setMerchantId(SELF_ID).build()),
+        harness.invoke(CALLER, CheckMerchantScore.newBuilder().build()),
         sent(
             messagesTo(
-                CALLER, equalTo(ReportedMerchantScore.newBuilder().setError("error").build()))));
+                CALLER,
+                equalTo(
+                    ReportedMerchantScore.newBuilder()
+                        .setStatus(MerchantResult.UNKNOWN)
+                        .build()))));
   }
 
   private static class TestProvider implements StatefulFunctionProvider {
@@ -68,10 +87,7 @@ public class MerchantFunctionTest {
     @Override
     public StatefulFunction functionOfType(FunctionType type) {
       QueryService client =
-          MockQueryService.builder()
-              .withResponse(new Throwable("error"))
-              .withResponse(1)
-              .build();
+          MockQueryService.builder().withResponse(new Throwable("error")).withResponse(1).build();
 
       return new MerchantFunction(client);
     }

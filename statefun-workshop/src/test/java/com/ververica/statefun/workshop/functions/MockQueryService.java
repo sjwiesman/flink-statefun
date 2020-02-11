@@ -2,9 +2,7 @@ package com.ververica.statefun.workshop.functions;
 
 import com.ververica.statefun.workshop.utils.QueryService;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class MockQueryService implements QueryService {

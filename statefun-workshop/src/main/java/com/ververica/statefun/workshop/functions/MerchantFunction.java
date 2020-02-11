@@ -18,18 +18,15 @@
 package com.ververica.statefun.workshop.functions;
 
 import com.ververica.statefun.workshop.generated.CheckMerchantScore;
+import com.ververica.statefun.workshop.generated.MerchantResult;
 import com.ververica.statefun.workshop.generated.ReportedMerchantScore;
 import com.ververica.statefun.workshop.utils.MerchantMetadata;
 import com.ververica.statefun.workshop.utils.QueryService;
-import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.AsyncOperationResult;
 import org.apache.flink.statefun.sdk.Context;
-import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.StatefulFunction;
 
 public class MerchantFunction implements StatefulFunction {
-
-  public static final FunctionType TYPE = new FunctionType("ververica", "merchant");
 
   private final QueryService client;
 
@@ -41,7 +38,8 @@ public class MerchantFunction implements StatefulFunction {
   @SuppressWarnings("unchecked")
   public void invoke(Context context, Object input) {
     if (input instanceof CheckMerchantScore) {
-      makeAsyncCall(context, context.caller(), 3);
+      MerchantMetadata metadata = new MerchantMetadata(context.caller(), 3);
+      context.registerAsyncOperation(metadata, client.query(context.self().id()));
       return;
     }
 
@@ -51,27 +49,27 @@ public class MerchantFunction implements StatefulFunction {
 
       MerchantMetadata metadata = result.metadata();
       if (result.unknown()) {
-        makeAsyncCall(context, metadata.getAddress(), metadata.getRemainingAttempts());
+        MerchantMetadata metadata1 =
+            new MerchantMetadata(metadata.getAddress(), metadata.getRemainingAttempts());
+        context.registerAsyncOperation(metadata1, client.query(context.self().id()));
       } else if (result.failure()) {
         if (metadata.getRemainingAttempts() == 0) {
           ReportedMerchantScore score =
-              ReportedMerchantScore.newBuilder().setError(result.throwable().getMessage()).build();
-
+              ReportedMerchantScore.newBuilder().setStatus(MerchantResult.UNKNOWN).build();
           context.send(metadata.getAddress(), score);
         } else {
-          makeAsyncCall(context, metadata.getAddress(), metadata.getRemainingAttempts() - 1);
+          MerchantMetadata metadata1 =
+              new MerchantMetadata(metadata.getAddress(), metadata.getRemainingAttempts() - 1);
+          context.registerAsyncOperation(metadata1, client.query(context.self().id()));
         }
       } else {
         ReportedMerchantScore score =
-            ReportedMerchantScore.newBuilder().setScore(result.value()).build();
-
+            ReportedMerchantScore.newBuilder()
+                .setStatus(MerchantResult.SCORED)
+                .setScore(result.value())
+                .build();
         context.send(metadata.getAddress(), score);
       }
     }
-  }
-
-  private void makeAsyncCall(Context context, Address origin, int remainingAttempts) {
-    MerchantMetadata metadata = new MerchantMetadata(origin, remainingAttempts);
-    context.registerAsyncOperation(metadata, client.query(context.self().id()));
   }
 }

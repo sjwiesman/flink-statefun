@@ -18,16 +18,28 @@
 syntax = "proto3";
 
 package org.apache.flink.statefun.examples.kafka;
+
+import "google/protobuf/timestamp.proto";
+
 option java_package = "com.ververica.statefun.workshop.generated";
 option java_multiple_files = true;
 
-message ReportFraud {
+message Transaction {
     string account = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    string merchant = 3;
+    int32 amount = 4;
 }
 
-message QueryFraud {
+message UserResponse {
     string account = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    bool isFraud = 3;
 }
+
+message ReportFraud { }
+
+message QueryFraud { }
 
 message ReportedFraud {
     int32 count = 1;
@@ -35,13 +47,23 @@ message ReportedFraud {
 
 message ExpireFraud { }
 
-message CheckMerchantScore {
-    string merchantId = 1;
+message CheckMerchantScore { }
+
+enum MerchantResult {
+    UNKNOWN = 0;
+    SCORED  = 1;
 }
 
 message ReportedMerchantScore {
-    oneof result {
-        int32 score = 1;
-        string error = 2;
-    }
+    MerchantResult status = 1;
+    int32 score = 2;
+}
+
+message FeatureVector {
+    int32 fraudCount    = 1;
+    int32 merchantScore = 2;
+}
+
+message FraudScore {
+    int32 score = 1;
 }
