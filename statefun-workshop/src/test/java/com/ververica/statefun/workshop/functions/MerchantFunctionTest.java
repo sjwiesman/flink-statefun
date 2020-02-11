@@ -1,6 +1,7 @@
 package com.ververica.statefun.workshop.functions;
 
-import static org.apache.flink.statefun.testutils.matchers.StatefunMatchers.*;
+import static com.ververica.statefun.workshop.identifiers.MERCHANT_TYPE;
+import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.ververica.statefun.workshop.generated.CheckMerchantScore;
@@ -23,7 +24,7 @@ public class MerchantFunctionTest {
   @Test
   public void testAsyncOperation() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(new TestProvider(), MerchantFunction.TYPE, SELF_ID);
+        FunctionTestHarness.test(new TestProvider(), MERCHANT_TYPE, SELF_ID);
 
     Assert.assertThat(
         harness.invoke(CALLER, CheckMerchantScore.newBuilder().setMerchantId(SELF_ID).build()),
@@ -33,7 +34,7 @@ public class MerchantFunctionTest {
   @Test
   public void testSingleFailureOperation() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(new TestProviderWithSingleFailure(), MerchantFunction.TYPE, SELF_ID);
+        FunctionTestHarness.test(new TestProviderWithSingleFailure(), MERCHANT_TYPE, SELF_ID);
 
     Assert.assertThat(
         harness.invoke(CALLER, CheckMerchantScore.newBuilder().setMerchantId(SELF_ID).build()),
@@ -43,8 +44,7 @@ public class MerchantFunctionTest {
   @Test
   public void testAsyncFailure() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(
-            new TestProviderWithMultipleFailures(), MerchantFunction.TYPE, SELF_ID);
+        FunctionTestHarness.test(new TestProviderWithMultipleFailures(), MERCHANT_TYPE, SELF_ID);
 
     Assert.assertThat(
         harness.invoke(CALLER, CheckMerchantScore.newBuilder().setMerchantId(SELF_ID).build()),

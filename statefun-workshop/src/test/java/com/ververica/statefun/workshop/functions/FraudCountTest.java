@@ -17,7 +17,8 @@
  */
 package com.ververica.statefun.workshop.functions;
 
-import static org.apache.flink.statefun.testutils.matchers.StatefunMatchers.*;
+import static com.ververica.statefun.workshop.identifiers.FRAUD_TYPE;
+import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.ververica.statefun.workshop.generated.QueryFraud;
@@ -37,12 +38,12 @@ public class FraudCountTest {
   @Test
   public void testFunction() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(ignore -> new FraudCount(), FraudCount.TYPE, "user1");
+        FunctionTestHarness.test(ignore -> new FraudCount(), FRAUD_TYPE, "user1");
 
     Assert.assertThat(
         "When reporting fraud, the function should not respond",
         harness.invoke(SENDER, ReportFraud.newBuilder().setAccount("user1").build()),
-        noResponse());
+        sentNothing());
 
     Assert.assertThat(
         "When querying fraud, the function should return the current count",
@@ -53,12 +54,12 @@ public class FraudCountTest {
   @Test
   public void testRollingCount() {
     FunctionTestHarness harness =
-        FunctionTestHarness.test(ignore -> new FraudCount(), FraudCount.TYPE, "user1");
+        FunctionTestHarness.test(ignore -> new FraudCount(), FRAUD_TYPE, "user1");
 
     Assert.assertThat(
         "When reporting fraud, the function should not respond",
         harness.invoke(SENDER, ReportFraud.newBuilder().setAccount("user1").build()),
-        noResponse());
+        sentNothing());
 
     Assert.assertThat(
         "When querying fraud, the function should return the current count",
@@ -68,7 +69,7 @@ public class FraudCountTest {
     Assert.assertThat(
         "In 15 days the count should not change the function should not respond",
         harness.tick(Duration.ofDays(15)),
-        noResponse());
+        sentNothing());
 
     Assert.assertThat(
         "In 15 days the count should not change the function should not respond",
@@ -78,7 +79,7 @@ public class FraudCountTest {
     Assert.assertThat(
         "When reporting fraud, the function should not respond",
         harness.invoke(SENDER, ReportFraud.newBuilder().setAccount("user1").build()),
-        noResponse());
+        sentNothing());
 
     Assert.assertThat(
         "When querying fraud, the function should return the current count",
@@ -88,7 +89,7 @@ public class FraudCountTest {
     Assert.assertThat(
         "After 30 days the count should decrement, but this won't return anything",
         harness.tick(Duration.ofDays(15)),
-        noResponse());
+        sentNothing());
 
     Assert.assertThat(
         "When querying fraud, the function should return the current count",

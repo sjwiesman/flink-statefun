@@ -53,27 +53,20 @@ public class MerchantFunction implements StatefulFunction {
       if (result.unknown()) {
         makeAsyncCall(context, metadata.getAddress(), metadata.getRemainingAttempts());
       } else if (result.failure()) {
-        handleFailure(context, result, metadata);
+        if (metadata.getRemainingAttempts() == 0) {
+          ReportedMerchantScore score =
+              ReportedMerchantScore.newBuilder().setError(result.throwable().getMessage()).build();
+
+          context.send(metadata.getAddress(), score);
+        } else {
+          makeAsyncCall(context, metadata.getAddress(), metadata.getRemainingAttempts() - 1);
+        }
       } else {
         ReportedMerchantScore score =
             ReportedMerchantScore.newBuilder().setScore(result.value()).build();
 
         context.send(metadata.getAddress(), score);
       }
-    }
-  }
-
-  private void handleFailure(
-      Context context,
-      AsyncOperationResult<MerchantMetadata, Integer> result,
-      MerchantMetadata metadata) {
-    if (metadata.getRemainingAttempts() == 0) {
-      ReportedMerchantScore score =
-          ReportedMerchantScore.newBuilder().setError(result.throwable().getMessage()).build();
-
-      context.send(metadata.getAddress(), score);
-    } else {
-      makeAsyncCall(context, metadata.getAddress(), metadata.getRemainingAttempts() - 1);
     }
   }
 

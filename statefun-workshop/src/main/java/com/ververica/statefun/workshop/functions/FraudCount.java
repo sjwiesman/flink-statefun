@@ -23,14 +23,11 @@ import com.ververica.statefun.workshop.generated.ReportFraud;
 import com.ververica.statefun.workshop.generated.ReportedFraud;
 import java.time.Duration;
 import org.apache.flink.statefun.sdk.Context;
-import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.StatefulFunction;
 import org.apache.flink.statefun.sdk.annotations.Persisted;
 import org.apache.flink.statefun.sdk.state.PersistedValue;
 
 public class FraudCount implements StatefulFunction {
-
-  public static final FunctionType TYPE = new FunctionType("ververica", "fraud-count");
 
   @Persisted
   private final PersistedValue<Integer> count = PersistedValue.of("count", Integer.class);
@@ -42,7 +39,6 @@ public class FraudCount implements StatefulFunction {
       count.set(current + 1);
 
       context.sendAfter(Duration.ofDays(30), context.self(), ExpireFraud.getDefaultInstance());
-      return;
     }
 
     if (input instanceof ExpireFraud) {
