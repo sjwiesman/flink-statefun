@@ -1,4 +1,4 @@
-package com.ververica.statefun.workshop.functions;
+package com.ververica.statefun.workshop.utils;
 
 public class MissingImplementationException extends RuntimeException {
   public MissingImplementationException() {

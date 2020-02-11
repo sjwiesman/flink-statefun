@@ -57,7 +57,7 @@ public class MerchantFunctionTest {
 
     @Override
     public StatefulFunction functionOfType(FunctionType type) {
-      QueryService client = MockQueryService.builder().withResponse(SELF_ID, 1).build();
+      QueryService client = MockQueryService.builder().withResponse(1).build();
 
       return new MerchantFunction(client);
     }
@@ -69,8 +69,8 @@ public class MerchantFunctionTest {
     public StatefulFunction functionOfType(FunctionType type) {
       QueryService client =
           MockQueryService.builder()
-              .withResponse(SELF_ID, new Throwable("error"))
-              .withResponse(SELF_ID, 1)
+              .withResponse(new Throwable("error"))
+              .withResponse(1)
               .build();
 
       return new MerchantFunction(client);
@@ -83,10 +83,10 @@ public class MerchantFunctionTest {
     public StatefulFunction functionOfType(FunctionType type) {
       QueryService client =
           MockQueryService.builder()
-              .withResponse(SELF_ID, new Throwable("error"))
-              .withResponse(SELF_ID, new Throwable("error"))
-              .withResponse(SELF_ID, new Throwable("error"))
-              .withResponse(SELF_ID, new Throwable("error"))
+              .withResponse(new Throwable("error"))
+              .withResponse(new Throwable("error"))
+              .withResponse(new Throwable("error"))
+              .withResponse(new Throwable("error"))
               .build();
 
       return new MerchantFunction(client);
