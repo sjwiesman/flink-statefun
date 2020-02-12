@@ -92,7 +92,7 @@ public class TransactionManagerTest {
 
     Assert.assertThat(harness.invoke(FraudScore.newBuilder().setScore(50).build()), sentNothing());
 
-    Assert.assertThat(harness.getResults(PROCESS), contains(equalTo(TRANSACTION)));
+    Assert.assertThat(harness.getEgress(PROCESS), contains(equalTo(TRANSACTION)));
   }
 
   @Test
@@ -103,12 +103,12 @@ public class TransactionManagerTest {
 
     Assert.assertThat(harness.invoke(FraudScore.newBuilder().setScore(81).build()), sentNothing());
 
-    Assert.assertThat(harness.getResults(ALERT), contains(equalTo(TRANSACTION)));
+    Assert.assertThat(harness.getEgress(ALERT), contains(equalTo(TRANSACTION)));
 
     Assert.assertThat(
         harness.invoke(UserResponse.newBuilder().setIsFraud(true).build()), sentNothing());
 
-    Assert.assertThat(harness.getResults(PROCESS), empty());
+    Assert.assertThat(harness.getEgress(PROCESS), empty());
   }
 
   @Test
@@ -119,11 +119,11 @@ public class TransactionManagerTest {
 
     Assert.assertThat(harness.invoke(FraudScore.newBuilder().setScore(81).build()), sentNothing());
 
-    Assert.assertThat(harness.getResults(ALERT), contains(equalTo(TRANSACTION)));
+    Assert.assertThat(harness.getEgress(ALERT), contains(equalTo(TRANSACTION)));
 
     Assert.assertThat(
         harness.invoke(UserResponse.newBuilder().setIsFraud(false).build()), sentNothing());
 
-    Assert.assertThat(harness.getResults(PROCESS), contains(equalTo(TRANSACTION)));
+    Assert.assertThat(harness.getEgress(PROCESS), contains(equalTo(TRANSACTION)));
   }
 }
