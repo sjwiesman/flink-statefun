@@ -31,34 +31,6 @@ message Transaction {
     int32 amount = 4;
 }
 
-message UserResponse {
-    string account = 1;
-    google.protobuf.Timestamp timestamp = 2;
-    bool isFraud = 3;
-}
-
-message ReportFraud { }
-
-message QueryFraud { }
-
-message ReportedFraud {
-    int32 count = 1;
-}
-
-message ExpireFraud { }
-
-message CheckMerchantScore { }
-
-enum MerchantResult {
-    UNKNOWN = 0;
-    SCORED  = 1;
-}
-
-message ReportedMerchantScore {
-    MerchantResult status = 1;
-    int32 score = 2;
-}
-
 message FeatureVector {
     int32 fraudCount    = 1;
     int32 merchantScore = 2;

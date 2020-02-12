@@ -2,14 +2,13 @@ package com.ververica.statefun.workshop.functions;
 
 import static com.ververica.statefun.workshop.identifiers.*;
 
-import com.ververica.statefun.workshop.generated.CheckMerchantScore;
 import com.ververica.statefun.workshop.generated.FeatureVector;
 import com.ververica.statefun.workshop.generated.FraudScore;
-import com.ververica.statefun.workshop.generated.QueryFraud;
-import com.ververica.statefun.workshop.generated.ReportedFraud;
-import com.ververica.statefun.workshop.generated.ReportedMerchantScore;
 import com.ververica.statefun.workshop.generated.Transaction;
-import com.ververica.statefun.workshop.generated.UserResponse;
+import com.ververica.statefun.workshop.messages.MerchantScore;
+import com.ververica.statefun.workshop.messages.QueryFraud;
+import com.ververica.statefun.workshop.messages.QueryMerchantScore;
+import com.ververica.statefun.workshop.messages.ReportedFraud;
 import org.apache.flink.statefun.sdk.Context;
 import org.apache.flink.statefun.sdk.StatefulFunction;
 import org.apache.flink.statefun.sdk.annotations.Persisted;
@@ -38,10 +37,10 @@ public class TransactionManager implements StatefulFunction {
       transactionState.set(transaction);
 
       String account = transaction.getAccount();
-      context.send(FRAUD_FN, account, QueryFraud.getDefaultInstance());
+      context.send(FRAUD_FN, account, new QueryFraud());
 
       String merchant = transaction.getMerchant();
-      context.send(MERCHANT_FN, merchant, CheckMerchantScore.getDefaultInstance());
+      context.send(MERCHANT_FN, merchant, new QueryMerchantScore());
     }
 
     if (input instanceof ReportedFraud) {
@@ -54,8 +53,8 @@ public class TransactionManager implements StatefulFunction {
       }
     }
 
-    if (input instanceof ReportedMerchantScore) {
-      ReportedMerchantScore reportedScore = (ReportedMerchantScore) input;
+    if (input instanceof MerchantScore) {
+      MerchantScore reportedScore = (MerchantScore) input;
       merchantScore.set(reportedScore.getScore());
 
       Integer count = recentFraud.get();
@@ -69,18 +68,8 @@ public class TransactionManager implements StatefulFunction {
       if (fraudScore.getScore() > THRESHOLD) {
         context.send(ALERT, transactionState.get());
       } else {
-        context.send(PROCESS, transactionState.get());
         clean();
       }
-    }
-
-    if (input instanceof UserResponse) {
-      UserResponse response = (UserResponse) input;
-      if (!response.getIsFraud()) {
-        context.send(PROCESS, transactionState.get());
-      }
-
-      clean();
     }
   }
 

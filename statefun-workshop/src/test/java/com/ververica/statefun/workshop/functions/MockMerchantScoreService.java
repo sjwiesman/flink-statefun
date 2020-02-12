@@ -1,24 +1,27 @@
 package com.ververica.statefun.workshop.functions;
 
-import com.ververica.statefun.workshop.utils.QueryService;
+import com.ververica.statefun.workshop.utils.MerchantScoreService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class MockQueryService implements QueryService {
+public class MockMerchantScoreService implements MerchantScoreService {
 
-  private final List<CompletableFuture<Integer>> responses;
+    private final List<CompletableFuture<Integer>> responses;
 
   public static Builder builder() {
     return new Builder();
   }
 
-  private MockQueryService(List<CompletableFuture<Integer>> responses) {
+  private MockMerchantScoreService(List<CompletableFuture<Integer>> responses) {
     this.responses = responses;
   }
 
   @Override
   public CompletableFuture<Integer> query(String merchantId) {
+    if (responses.isEmpty()) {
+        throw new IllegalStateException("The mock query service has been called more times then expected");
+    }
     return responses.remove(0);
   }
 
@@ -40,8 +43,8 @@ public class MockQueryService implements QueryService {
       return this;
     }
 
-    public MockQueryService build() {
-      return new MockQueryService(responses);
+    public MockMerchantScoreService build() {
+      return new MockMerchantScoreService(responses);
     }
   }
 }

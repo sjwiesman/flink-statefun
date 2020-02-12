@@ -4,10 +4,9 @@ import static com.ververica.statefun.workshop.identifiers.MERCHANT_FN;
 import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.ververica.statefun.workshop.generated.CheckMerchantScore;
-import com.ververica.statefun.workshop.generated.MerchantResult;
-import com.ververica.statefun.workshop.generated.ReportedMerchantScore;
-import com.ververica.statefun.workshop.utils.QueryService;
+import com.ververica.statefun.workshop.messages.MerchantScore;
+import com.ververica.statefun.workshop.messages.QueryMerchantScore;
+import com.ververica.statefun.workshop.utils.MerchantScoreService;
 import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.StatefulFunction;
@@ -28,15 +27,11 @@ public class MerchantFunctionTest {
         FunctionTestHarness.test(new TestProvider(), MERCHANT_FN, SELF_ID);
 
     Assert.assertThat(
-        harness.invoke(CALLER, CheckMerchantScore.newBuilder().build()),
+        harness.invoke(CALLER, new QueryMerchantScore()),
         sent(
             messagesTo(
                 CALLER,
-                equalTo(
-                    ReportedMerchantScore.newBuilder()
-                        .setStatus(MerchantResult.SCORED)
-                        .setScore(1)
-                        .build()))));
+                equalTo(MerchantScore.score(1)))));
   }
 
   @Test
@@ -45,15 +40,11 @@ public class MerchantFunctionTest {
         FunctionTestHarness.test(new TestProviderWithSingleFailure(), MERCHANT_FN, SELF_ID);
 
     Assert.assertThat(
-        harness.invoke(CALLER, CheckMerchantScore.newBuilder().build()),
+        harness.invoke(CALLER, new QueryMerchantScore()),
         sent(
             messagesTo(
                 CALLER,
-                equalTo(
-                    ReportedMerchantScore.newBuilder()
-                        .setStatus(MerchantResult.SCORED)
-                        .setScore(1)
-                        .build()))));
+                equalTo(MerchantScore.score(1)))));
   }
 
   @Test
@@ -62,21 +53,18 @@ public class MerchantFunctionTest {
         FunctionTestHarness.test(new TestProviderWithMultipleFailures(), MERCHANT_FN, SELF_ID);
 
     Assert.assertThat(
-        harness.invoke(CALLER, CheckMerchantScore.newBuilder().build()),
+        harness.invoke(CALLER, new QueryMerchantScore()),
         sent(
             messagesTo(
                 CALLER,
-                equalTo(
-                    ReportedMerchantScore.newBuilder()
-                        .setStatus(MerchantResult.UNKNOWN)
-                        .build()))));
+                equalTo(MerchantScore.error()))));
   }
 
   private static class TestProvider implements StatefulFunctionProvider {
 
     @Override
     public StatefulFunction functionOfType(FunctionType type) {
-      QueryService client = MockQueryService.builder().withResponse(1).build();
+      MerchantScoreService client = MockMerchantScoreService.builder().withResponse(1).build();
 
       return new MerchantFunction(client);
     }
@@ -86,8 +74,11 @@ public class MerchantFunctionTest {
 
     @Override
     public StatefulFunction functionOfType(FunctionType type) {
-      QueryService client =
-          MockQueryService.builder().withResponse(new Throwable("error")).withResponse(1).build();
+      MerchantScoreService client =
+          MockMerchantScoreService.builder()
+              .withResponse(new Throwable("error"))
+              .withResponse(1)
+              .build();
 
       return new MerchantFunction(client);
     }
@@ -97,9 +88,8 @@ public class MerchantFunctionTest {
 
     @Override
     public StatefulFunction functionOfType(FunctionType type) {
-      QueryService client =
-          MockQueryService.builder()
-              .withResponse(new Throwable("error"))
+      MerchantScoreService client =
+          MockMerchantScoreService.builder()
               .withResponse(new Throwable("error"))
               .withResponse(new Throwable("error"))
               .withResponse(new Throwable("error"))

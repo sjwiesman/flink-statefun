@@ -17,30 +17,38 @@
  */
 package com.ververica.statefun.workshop.functions;
 
-import com.ververica.statefun.workshop.generated.CheckMerchantScore;
-import com.ververica.statefun.workshop.generated.MerchantResult;
-import com.ververica.statefun.workshop.generated.ReportedMerchantScore;
-import com.ververica.statefun.workshop.utils.MerchantMetadata;
-import com.ververica.statefun.workshop.utils.QueryService;
+import com.ververica.statefun.workshop.messages.MerchantMetadata;
+import com.ververica.statefun.workshop.messages.MerchantScore;
+import com.ververica.statefun.workshop.messages.QueryMerchantScore;
+import com.ververica.statefun.workshop.utils.MerchantScoreService;
+import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.AsyncOperationResult;
 import org.apache.flink.statefun.sdk.Context;
 import org.apache.flink.statefun.sdk.StatefulFunction;
 
+/**
+ * Our application relies on a 3rd party service that returns a trustworthiness score for each
+ * merchant.
+ *
+ * <p>This function, when it receives a {@link QueryMerchantScore} message, will make up to <b>3
+ * attempts</b> to query the service and return a score. If the service does not successfully return
+ * a result within 3 tries it will return back an error.
+ *
+ * <p>All cases will result in a {@link MerchantScore} message be sent back to the caller function.
+ */
 public class MerchantFunction implements StatefulFunction {
 
-  private final QueryService client;
+  private final MerchantScoreService client;
 
-  public MerchantFunction(QueryService client) {
+  public MerchantFunction(MerchantScoreService client) {
     this.client = client;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public void invoke(Context context, Object input) {
-    if (input instanceof CheckMerchantScore) {
-      MerchantMetadata metadata = new MerchantMetadata(context.caller(), 3);
-      context.registerAsyncOperation(metadata, client.query(context.self().id()));
-      return;
+    if (input instanceof QueryMerchantScore) {
+      queryService(context, context.caller(), 2);
     }
 
     if (input instanceof AsyncOperationResult) {
@@ -49,27 +57,29 @@ public class MerchantFunction implements StatefulFunction {
 
       MerchantMetadata metadata = result.metadata();
       if (result.unknown()) {
-        MerchantMetadata metadata1 =
-            new MerchantMetadata(metadata.getAddress(), metadata.getRemainingAttempts());
-        context.registerAsyncOperation(metadata1, client.query(context.self().id()));
+        queryService(context, metadata.getAddress(), metadata.getRemainingAttempts());
       } else if (result.failure()) {
         if (metadata.getRemainingAttempts() == 0) {
-          ReportedMerchantScore score =
-              ReportedMerchantScore.newBuilder().setStatus(MerchantResult.UNKNOWN).build();
-          context.send(metadata.getAddress(), score);
+          context.send(metadata.getAddress(), MerchantScore.error());
         } else {
-          MerchantMetadata metadata1 =
-              new MerchantMetadata(metadata.getAddress(), metadata.getRemainingAttempts() - 1);
-          context.registerAsyncOperation(metadata1, client.query(context.self().id()));
+          queryService(context, metadata.getAddress(), metadata.getRemainingAttempts() - 1);
         }
       } else {
-        ReportedMerchantScore score =
-            ReportedMerchantScore.newBuilder()
-                .setStatus(MerchantResult.SCORED)
-                .setScore(result.value())
-                .build();
+        MerchantScore score = MerchantScore.score(result.value());
         context.send(metadata.getAddress(), score);
       }
     }
+  }
+
+  /**
+   * Query the external service and register the future as a callback.
+   *
+   * @param context The function context.
+   * @param address The address where the final result should be sent.
+   * @param attempts The number of remaining attempts.
+   */
+  private void queryService(Context context, Address address, int attempts) {
+    MerchantMetadata metadata = new MerchantMetadata(address, attempts);
+    context.registerAsyncOperation(metadata, client.query(context.self().id()));
   }
 }

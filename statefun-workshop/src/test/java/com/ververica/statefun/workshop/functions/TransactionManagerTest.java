@@ -3,18 +3,17 @@ package com.ververica.statefun.workshop.functions;
 import static com.ververica.statefun.workshop.identifiers.*;
 import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.protobuf.Timestamp;
-import com.ververica.statefun.workshop.generated.CheckMerchantScore;
 import com.ververica.statefun.workshop.generated.FeatureVector;
 import com.ververica.statefun.workshop.generated.FraudScore;
-import com.ververica.statefun.workshop.generated.QueryFraud;
-import com.ververica.statefun.workshop.generated.ReportedFraud;
-import com.ververica.statefun.workshop.generated.ReportedMerchantScore;
 import com.ververica.statefun.workshop.generated.Transaction;
 import com.ververica.statefun.workshop.generated.UserResponse;
+import com.ververica.statefun.workshop.messages.MerchantScore;
+import com.ververica.statefun.workshop.messages.QueryFraud;
+import com.ververica.statefun.workshop.messages.QueryMerchantScore;
+import com.ververica.statefun.workshop.messages.ReportedFraud;
 import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.testutils.function.FunctionTestHarness;
 import org.junit.Assert;
@@ -42,10 +41,10 @@ public class TransactionManagerTest {
     Assert.assertThat(
         harness.invoke(TRANSACTION),
         sent(
-            messagesTo(new Address(FRAUD_FN, ACCOUNT), equalTo(QueryFraud.getDefaultInstance())),
+            messagesTo(new Address(FRAUD_FN, ACCOUNT), equalTo(new QueryFraud())),
             messagesTo(
                 new Address(MERCHANT_FN, MERCHANT),
-                equalTo(CheckMerchantScore.getDefaultInstance()))));
+                equalTo(new QueryMerchantScore()))));
   }
 
   @Test
@@ -56,10 +55,10 @@ public class TransactionManagerTest {
     harness.invoke(TRANSACTION);
 
     Assert.assertThat(
-        harness.invoke(ReportedFraud.newBuilder().setCount(1).build()), sentNothing());
+        harness.invoke(new ReportedFraud(1)), sentNothing());
 
     Assert.assertThat(
-        harness.invoke(ReportedMerchantScore.newBuilder().setScore(1).build()),
+        harness.invoke(MerchantScore.score(1)),
         sent(
             messagesTo(
                 new Address(MODEL_FN, ACCOUNT),
@@ -74,25 +73,14 @@ public class TransactionManagerTest {
     harness.invoke(TRANSACTION);
 
     Assert.assertThat(
-        harness.invoke(ReportedMerchantScore.newBuilder().setScore(1).build()), sentNothing());
+        harness.invoke(MerchantScore.score(1)), sentNothing());
 
     Assert.assertThat(
-        harness.invoke(ReportedFraud.newBuilder().setCount(1).build()),
+        harness.invoke(new ReportedFraud(1)),
         sent(
             messagesTo(
                 new Address(MODEL_FN, ACCOUNT),
                 equalTo(FeatureVector.newBuilder().setFraudCount(1).setMerchantScore(1).build()))));
-  }
-
-  @Test
-  public void noSuspectedFraudTest() {
-    FunctionTestHarness harness =
-        FunctionTestHarness.test(ignore -> new TransactionManager(), MANAGER_FN, "id");
-    harness.invoke(TRANSACTION);
-
-    Assert.assertThat(harness.invoke(FraudScore.newBuilder().setScore(50).build()), sentNothing());
-
-    Assert.assertThat(harness.getEgress(PROCESS), contains(equalTo(TRANSACTION)));
   }
 
   @Test
@@ -105,10 +93,7 @@ public class TransactionManagerTest {
 
     Assert.assertThat(harness.getEgress(ALERT), contains(equalTo(TRANSACTION)));
 
-    Assert.assertThat(
-        harness.invoke(UserResponse.newBuilder().setIsFraud(true).build()), sentNothing());
-
-    Assert.assertThat(harness.getEgress(PROCESS), empty());
+    Assert.assertThat(harness.invoke(UserResponse.newBuilder().setIsFraud(true).build()), sentNothing());
   }
 
   @Test
@@ -123,7 +108,5 @@ public class TransactionManagerTest {
 
     Assert.assertThat(
         harness.invoke(UserResponse.newBuilder().setIsFraud(false).build()), sentNothing());
-
-    Assert.assertThat(harness.getEgress(PROCESS), contains(equalTo(TRANSACTION)));
   }
 }

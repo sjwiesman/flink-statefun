@@ -18,6 +18,4 @@ public class identifiers {
   public static final EgressIdentifier<Transaction> ALERT =
       new EgressIdentifier<>("ververica", "alert", Transaction.class);
 
-  public static final EgressIdentifier<Transaction> PROCESS =
-      new EgressIdentifier<>("ververica", "process", Transaction.class);
 }
