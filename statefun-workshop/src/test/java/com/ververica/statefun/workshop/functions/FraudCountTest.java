@@ -36,7 +36,7 @@ public class FraudCountTest {
   private static final Address SENDER = new Address(new FunctionType("ververica", "sender"), "id");
 
   @Test
-  public void testFunction() {
+  public void testCounting() {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new FraudCount(), FRAUD_FN, "user1");
 

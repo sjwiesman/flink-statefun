@@ -29,7 +29,7 @@ import org.apache.flink.statefun.sdk.state.PersistedValue;
 
 /**
  * This function tracks the total number of reported fraudulent transactions made against an account
- * on a rolling 30 day period.It supports three three message types:
+ * on a rolling 30 day period. It supports three three message types:
  *
  * <p>1) {@link ConfirmFraud}: When a customer reports a fraudulent transaction the function will
  * receive this message. It will increment it's internal count and set a 30 day expiration timer.
