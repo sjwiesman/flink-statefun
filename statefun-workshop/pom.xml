@@ -7,57 +7,19 @@
         <groupId>org.apache.flink</groupId>
         <version>1.1-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
+    <properties>
+        <flink.statefun.version>1.1-SNAPSHOT</flink.statefun.version>
+    </properties>
+
     <artifactId>statefun-workshop</artifactId>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>statefun-sdk</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.8.0</version>
-        </dependency>
-
-        <!-- test deps -->
-
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>statefun-testutil</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>${protoc-jar-maven-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <excludePackageNames>com.ververica.statefun.workshop.generated</excludePackageNames>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>pom</packaging>
+    <modules>
+        <module>statefun-workshop-io</module>
+        <module>statefun-workshop-protocol</module>
+        <module>statefun-workshop-functions</module>
+    </modules>
 
 </project>

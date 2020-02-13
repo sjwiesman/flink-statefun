@@ -1,0 +1,30 @@
+version: "2.1"
+services:
+  master:
+    build:
+      context: .
+    # uncomment to start from a savepoint
+    #command: -s /checkpoint-dir/savepoint/savepoint-bf101a-4e99820085fe
+    expose:
+    - "6123"
+    environment:
+    - ROLE=master
+    - MASTER_HOST=master
+    volumes:
+    - ./checkpoint-dir:/checkpoint-dir
+  worker:
+    build:
+      context: .
+    expose:
+    - "6121"
+    - "6122"
+    depends_on:
+    - master
+    links:
+    - "master:master"
+    environment:
+    - ROLE=worker
+    - MASTER_HOST=master
+    volumes:
+    - ./checkpoint-dir:/checkpoint-dir
+
