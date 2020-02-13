@@ -21,6 +21,7 @@ import static com.ververica.statefun.workshop.identifiers.FRAUD_FN;
 import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.ververica.statefun.workshop.functions.exercises.FraudCount;
 import com.ververica.statefun.workshop.messages.ConfirmFraud;
 import com.ververica.statefun.workshop.messages.QueryFraud;
 import com.ververica.statefun.workshop.messages.ReportedFraud;
@@ -29,6 +30,7 @@ import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.testutils.function.FunctionTestHarness;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class FraudCountTest {
@@ -36,6 +38,7 @@ public class FraudCountTest {
   private static final Address SENDER = new Address(new FunctionType("ververica", "sender"), "id");
 
   @Test
+  @Ignore
   public void testCounting() {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new FraudCount(), FRAUD_FN, "user1");
@@ -52,6 +55,7 @@ public class FraudCountTest {
   }
 
   @Test
+  @Ignore
   public void testRollingCount() {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new FraudCount(), FRAUD_FN, "user1");

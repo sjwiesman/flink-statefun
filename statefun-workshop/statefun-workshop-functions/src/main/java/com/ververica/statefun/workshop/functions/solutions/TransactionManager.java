@@ -1,4 +1,4 @@
-package com.ververica.statefun.workshop.functions;
+package com.ververica.statefun.workshop.functions.solutions;
 
 import static com.ververica.statefun.workshop.identifiers.*;
 import static com.ververica.statefun.workshop.io.identifiers.ALERT;

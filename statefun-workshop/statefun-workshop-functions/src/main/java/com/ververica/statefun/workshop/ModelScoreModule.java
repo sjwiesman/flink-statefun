@@ -1,8 +1,8 @@
 package com.ververica.statefun.workshop;
 
-import com.ververica.statefun.workshop.functions.FraudCount;
+import com.ververica.statefun.workshop.functions.solutions.FraudCount;
 import com.ververica.statefun.workshop.functions.PythonModelScorer;
-import com.ververica.statefun.workshop.functions.TransactionManager;
+import com.ververica.statefun.workshop.functions.solutions.TransactionManager;
 import com.ververica.statefun.workshop.provider.MerchantProvider;
 import com.ververica.statefun.workshop.routers.TransactionRouter;
 import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;

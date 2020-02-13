@@ -1,10 +1,11 @@
 package com.ververica.statefun.workshop.messages;
 
+import com.ververica.statefun.workshop.functions.solutions.MerchantFunction;
 import org.apache.flink.statefun.sdk.Address;
 
 /**
  * The metadata stored along with each async request in the {@link
- * com.ververica.statefun.workshop.functions.MerchantFunction}.
+ * MerchantFunction}.
  *
  * <p>It tracks the {@link Address} where the final result should be sent along with the number of
  * remaining attempts in case of failure.

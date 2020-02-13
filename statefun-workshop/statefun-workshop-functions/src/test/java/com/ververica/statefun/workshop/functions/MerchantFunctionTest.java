@@ -4,6 +4,7 @@ import static com.ververica.statefun.workshop.identifiers.MERCHANT_FN;
 import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.ververica.statefun.workshop.functions.exercises.MerchantFunction;
 import com.ververica.statefun.workshop.messages.MerchantScore;
 import com.ververica.statefun.workshop.messages.QueryMerchantScore;
 import com.ververica.statefun.workshop.utils.MerchantScoreService;
@@ -13,8 +14,10 @@ import org.apache.flink.statefun.sdk.StatefulFunction;
 import org.apache.flink.statefun.sdk.StatefulFunctionProvider;
 import org.apache.flink.statefun.testutils.function.FunctionTestHarness;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class MerchantFunctionTest {
 
   private static String SELF_ID = "my-id";

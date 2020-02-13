@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.protobuf.Timestamp;
+import com.ververica.statefun.workshop.functions.exercises.TransactionManager;
 import com.ververica.statefun.workshop.generated.FeatureVector;
 import com.ververica.statefun.workshop.generated.FraudScore;
 import com.ververica.statefun.workshop.generated.Transaction;
@@ -17,8 +18,10 @@ import com.ververica.statefun.workshop.messages.ReportedFraud;
 import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.testutils.function.FunctionTestHarness;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TransactionManagerTest {
 
   private static final String ACCOUNT = "account-id";
