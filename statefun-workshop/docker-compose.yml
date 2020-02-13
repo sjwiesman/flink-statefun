@@ -7,6 +7,8 @@ services:
     #command: -s /checkpoint-dir/savepoint/savepoint-bf101a-4e99820085fe
     expose:
     - "6123"
+    ports:
+    - "8000:8000"
     environment:
     - ROLE=master
     - MASTER_HOST=master
