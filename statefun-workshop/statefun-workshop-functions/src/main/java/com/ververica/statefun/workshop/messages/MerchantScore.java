@@ -1,12 +1,11 @@
 package com.ververica.statefun.workshop.messages;
 
 import com.ververica.statefun.workshop.functions.solutions.MerchantFunction;
-
 import java.util.Objects;
 
 /**
- * This message is sent from a {@link MerchantFunction} instance
- * when reporting the trustworthiness of a merchant.
+ * This message is sent from a {@link MerchantFunction} instance when reporting the trustworthiness
+ * of a merchant.
  */
 public final class MerchantScore {
   public static MerchantScore score(int score) {

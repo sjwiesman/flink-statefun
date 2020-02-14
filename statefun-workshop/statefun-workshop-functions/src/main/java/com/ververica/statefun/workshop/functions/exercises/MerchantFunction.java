@@ -18,14 +18,12 @@ import org.apache.flink.statefun.sdk.StatefulFunction;
  */
 public class MerchantFunction implements StatefulFunction {
 
-    private final MerchantScoreService client;
+  private final MerchantScoreService client;
 
-    public MerchantFunction(MerchantScoreService client) {
-        this.client = client;
-    }
+  public MerchantFunction(MerchantScoreService client) {
+    this.client = client;
+  }
 
-    @Override
-    public void invoke(Context context, Object input) {
-
-    }
+  @Override
+  public void invoke(Context context, Object input) {}
 }

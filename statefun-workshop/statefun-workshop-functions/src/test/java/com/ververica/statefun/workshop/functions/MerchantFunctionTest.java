@@ -31,10 +31,7 @@ public class MerchantFunctionTest {
 
     Assert.assertThat(
         harness.invoke(CALLER, new QueryMerchantScore()),
-        sent(
-            messagesTo(
-                CALLER,
-                equalTo(MerchantScore.score(1)))));
+        sent(messagesTo(CALLER, equalTo(MerchantScore.score(1)))));
   }
 
   @Test
@@ -44,10 +41,7 @@ public class MerchantFunctionTest {
 
     Assert.assertThat(
         harness.invoke(CALLER, new QueryMerchantScore()),
-        sent(
-            messagesTo(
-                CALLER,
-                equalTo(MerchantScore.score(1)))));
+        sent(messagesTo(CALLER, equalTo(MerchantScore.score(1)))));
   }
 
   @Test
@@ -57,10 +51,7 @@ public class MerchantFunctionTest {
 
     Assert.assertThat(
         harness.invoke(CALLER, new QueryMerchantScore()),
-        sent(
-            messagesTo(
-                CALLER,
-                equalTo(MerchantScore.error()))));
+        sent(messagesTo(CALLER, equalTo(MerchantScore.error()))));
   }
 
   private static class TestProvider implements StatefulFunctionProvider {

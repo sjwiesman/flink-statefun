@@ -9,18 +9,20 @@ import org.slf4j.LoggerFactory;
 
 public class TransactionLoggerSink extends RichSinkFunction<Transaction> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TransactionLoggerSink.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TransactionLoggerSink.class);
 
-    private transient Counter counter;
+  private transient Counter counter;
 
-    @Override
-    public void open(Configuration parameters) {
-        counter = getRuntimeContext().getMetricGroup().counter("alerts");
-    }
+  @Override
+  public void open(Configuration parameters) {
+    counter = getRuntimeContext().getMetricGroup().counter("alerts");
+  }
 
-    @Override
-    public void invoke(Transaction value, Context context) {
-        counter.inc();
-        LOG.info(String.format("Suspected Fraud for account id %s at %s", value.getAccount(), value.getMerchant()));
-    }
+  @Override
+  public void invoke(Transaction value, Context context) {
+    counter.inc();
+    LOG.info(
+        String.format(
+            "Suspected Fraud for account id %s at %s", value.getAccount(), value.getMerchant()));
+  }
 }

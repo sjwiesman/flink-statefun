@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class MockMerchantScoreService implements MerchantScoreService {
 
-    private final List<CompletableFuture<Integer>> responses;
+  private final List<CompletableFuture<Integer>> responses;
 
   public static Builder builder() {
     return new Builder();
@@ -20,7 +20,8 @@ public class MockMerchantScoreService implements MerchantScoreService {
   @Override
   public CompletableFuture<Integer> query(String merchantId) {
     if (responses.isEmpty()) {
-        throw new IllegalStateException("The mock query service has been called more times then expected");
+      throw new IllegalStateException(
+          "The mock query service has been called more times then expected");
     }
     return responses.remove(0);
   }

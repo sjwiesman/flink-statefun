@@ -45,9 +45,7 @@ public class TransactionManagerTest {
         harness.invoke(TRANSACTION),
         sent(
             messagesTo(new Address(FRAUD_FN, ACCOUNT), equalTo(new QueryFraud())),
-            messagesTo(
-                new Address(MERCHANT_FN, MERCHANT),
-                equalTo(new QueryMerchantScore()))));
+            messagesTo(new Address(MERCHANT_FN, MERCHANT), equalTo(new QueryMerchantScore()))));
   }
 
   @Test
@@ -57,8 +55,7 @@ public class TransactionManagerTest {
 
     harness.invoke(TRANSACTION);
 
-    Assert.assertThat(
-        harness.invoke(new ReportedFraud(1)), sentNothing());
+    Assert.assertThat(harness.invoke(new ReportedFraud(1)), sentNothing());
 
     Assert.assertThat(
         harness.invoke(MerchantScore.score(1)),
@@ -75,8 +72,7 @@ public class TransactionManagerTest {
 
     harness.invoke(TRANSACTION);
 
-    Assert.assertThat(
-        harness.invoke(MerchantScore.score(1)), sentNothing());
+    Assert.assertThat(harness.invoke(MerchantScore.score(1)), sentNothing());
 
     Assert.assertThat(
         harness.invoke(new ReportedFraud(1)),

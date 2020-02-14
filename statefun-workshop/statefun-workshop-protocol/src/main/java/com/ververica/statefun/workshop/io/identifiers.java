@@ -5,7 +5,9 @@ import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 
 public class identifiers {
-    public static final IngressIdentifier<Transaction> TRANSACTIONS = new IngressIdentifier<>(Transaction.class, "ververica", "transactions");
+  public static final IngressIdentifier<Transaction> TRANSACTIONS =
+      new IngressIdentifier<>(Transaction.class, "ververica", "transactions");
 
-    public static final EgressIdentifier<Transaction> ALERT = new EgressIdentifier<>("ververica", "alert", Transaction.class);
+  public static final EgressIdentifier<Transaction> ALERT =
+      new EgressIdentifier<>("ververica", "alert", Transaction.class);
 }

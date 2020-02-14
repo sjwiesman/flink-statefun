@@ -9,9 +9,9 @@ import org.apache.flink.statefun.sdk.StatefulFunctionProvider;
 
 public class MerchantProvider implements StatefulFunctionProvider {
 
-    @Override
-    public StatefulFunction functionOfType(FunctionType type) {
-        MerchantScoreService client = new ProductionMerchantScoreService();
-        return new MerchantFunction(client);
-    }
+  @Override
+  public StatefulFunction functionOfType(FunctionType type) {
+    MerchantScoreService client = new ProductionMerchantScoreService();
+    return new MerchantFunction(client);
+  }
 }

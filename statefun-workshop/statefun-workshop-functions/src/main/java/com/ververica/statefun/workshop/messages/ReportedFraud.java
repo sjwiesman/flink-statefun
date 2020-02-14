@@ -1,13 +1,9 @@
 package com.ververica.statefun.workshop.messages;
 
 import com.ververica.statefun.workshop.functions.solutions.FraudCount;
-
 import java.util.Objects;
 
-/**
- * This message is sent from a {@link FraudCount} instance
- * when reporting the current count.
- */
+/** This message is sent from a {@link FraudCount} instance when reporting the current count. */
 public final class ReportedFraud {
 
   private final int count;

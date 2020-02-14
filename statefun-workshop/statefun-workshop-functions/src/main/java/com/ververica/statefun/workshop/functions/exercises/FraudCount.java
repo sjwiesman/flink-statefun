@@ -23,8 +23,6 @@ import org.apache.flink.statefun.sdk.StatefulFunction;
  */
 public class FraudCount implements StatefulFunction {
 
-    @Override
-    public void invoke(Context context, Object input) {
-
-    }
+  @Override
+  public void invoke(Context context, Object input) {}
 }
