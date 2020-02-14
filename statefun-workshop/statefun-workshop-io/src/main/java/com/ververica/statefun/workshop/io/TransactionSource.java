@@ -1,7 +1,5 @@
 package com.ververica.statefun.workshop.io;
 
-
-
 import static org.apache.flink.util.Preconditions.checkArgument;
 
 import java.util.SplittableRandom;
@@ -27,7 +25,7 @@ public class TransactionSource extends RichSourceFunction<Transaction>
     private long id = -1;
     private transient ListState<Long> idState;
 
-    public TransactionSource(int maxRecordsPerSecond) {
+    TransactionSource(int maxRecordsPerSecond) {
         checkArgument(
                 maxRecordsPerSecond == -1 || maxRecordsPerSecond > 0,
                 "maxRecordsPerSecond must be positive or -1 (infinite)");

@@ -133,5 +133,10 @@ public class Merchants {
     public static final String[] MERCHANTS = Arrays
             .stream(PREFIXES)
             .flatMap(prefix -> Arrays.stream(WORD_SUFFIXES).map(suffix -> prefix + suffix))
+            .map(Merchants::capitalize)
             .toArray(String[]::new);
+
+    private static String capitalize(String word) {
+       return word.substring(0, 1).toUpperCase() + word.substring(1);
+    }
 }
