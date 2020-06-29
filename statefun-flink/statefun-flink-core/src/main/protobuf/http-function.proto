@@ -19,8 +19,10 @@
 syntax = "proto3";
 
 package org.apache.flink.statefun.flink.core.polyglot;
+
 option java_package = "org.apache.flink.statefun.flink.core.polyglot.generated";
 option java_multiple_files = true;
+option go_package = "statefun";
 
 import "google/protobuf/any.proto";
 
