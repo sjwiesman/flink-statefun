@@ -2,9 +2,11 @@ package statefun
 
 import (
 	"errors"
+	"fmt"
 	"github.com/golang/protobuf/proto"
 	any "google.golang.org/protobuf/types/known/anypb"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -58,7 +60,7 @@ func (functions StatefulFunctions) Process(request *ToFunction) (*FromFunction, 
 		ctx.caller = invocation.Caller
 		err := function.Invoke((*invocation).Argument, &ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to execute function %s/%s\n%w", ctx.self.Namespace, ctx.self.Type, err)
 		}
 	}
 
@@ -68,31 +70,39 @@ func (functions StatefulFunctions) Process(request *ToFunction) (*FromFunction, 
 func (functions StatefulFunctions) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
 
 	bytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	if len(bytes) == 0 {
-			http.Error(w,"Empty request body", http.StatusBadRequest)
+		http.Error(w, "Empty request body", http.StatusBadRequest)
+		return
 	}
 
 	var request ToFunction
 	err = proto.Unmarshal(bytes, &request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	response, err := functions.Process(&request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Error processing request %s", request.String())
+		log.Print(err)
+		return
 	}
 
 	bytes, err = proto.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

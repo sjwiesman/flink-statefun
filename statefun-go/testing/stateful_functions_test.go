@@ -29,15 +29,15 @@ func init() {
 //noinspection GoVetCopyLock
 func TestFunctionHandler(t *testing.T) {
 	var stateValue []byte
-	if countAny, err := ptypes.MarshalAny(&Counter{Count: 1,}); err != nil {
-		assert.Fail(t,"Failed to initialize counter")
+	if countAny, err := ptypes.MarshalAny(&Counter{Count: 1}); err != nil {
+		assert.Fail(t, "Failed to initialize counter")
 	} else if stateValue, err = proto.Marshal(countAny); err != nil {
-		assert.Fail(t,"Failed to initialize counter")
+		assert.Fail(t, "Failed to initialize counter")
 	}
 
 	argument, err := ptypes.MarshalAny(&Invoke{})
 	if err != nil {
-		assert.Fail(t,"Failed to initialize argument")
+		assert.Fail(t, "Failed to initialize argument")
 	}
 
 	toFunction := statefun.ToFunction{

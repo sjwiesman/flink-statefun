@@ -1,0 +1,9 @@
+FROM golang:1.14
+
+ADD statefun-go go/statefun-go/
+
+WORKDIR go/statefun-go/e2etest
+
+RUN go build
+
+CMD ["./e2etest"]

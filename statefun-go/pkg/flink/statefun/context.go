@@ -72,6 +72,10 @@ func (ctx *Context) GetAndUnpack(name string, state proto.Message) error {
 		return errors.New(fmt.Sprintf("Unknown state name %s", name))
 	}
 
+	if packedState.value == nil || packedState.value.TypeUrl == "" {
+		return nil
+	}
+
 	err := ptypes.UnmarshalAny(packedState.value, state)
 	if err != nil {
 		return err
@@ -94,6 +98,10 @@ func (ctx *Context) Set(name string, value *any.Any) error {
 }
 
 func (ctx *Context) SetAndPack(name string, value proto.Message) error {
+	if value == nil {
+		return ctx.Set(name, nil)
+	}
+
 	state := ctx.states[name]
 	if state == nil {
 		return errors.New(fmt.Sprintf("Unknown state name %s", name))
@@ -115,34 +123,50 @@ func (ctx *Context) Clear(name string) {
 	_ = ctx.Set(name, nil)
 }
 
-func (ctx *Context) Send(target *Address, message *any.Any) {
+func (ctx *Context) Send(target *Address, message *any.Any) error {
+	if message == nil {
+		return errors.New("cannot send nil message to function")
+	}
+
 	invocation := &FromFunction_Invocation{
 		Target:   target,
 		Argument: message,
 	}
 
 	ctx.invocations = append(ctx.invocations, invocation)
+	return nil
 }
 
 func (ctx *Context) SendAndPack(target *Address, message proto.Message) error {
+	if message == nil {
+		return errors.New("cannot send nil message to function")
+	}
+
 	packedState, err := ptypes.MarshalAny(message)
 	if err != nil {
 		return err
 	}
 
-	ctx.Send(target, packedState)
-	return nil
+	return ctx.Send(target, packedState)
 }
 
-func (ctx *Context) Reply(message *any.Any) {
-	ctx.Send(ctx.caller, message)
+func (ctx *Context) Reply(message *any.Any) error {
+	if message == nil {
+		return errors.New("cannot send nil message to function")
+	}
+
+	return ctx.Send(ctx.caller, message)
 }
 
 func (ctx *Context) ReplyAndPack(message proto.Message) error {
 	return ctx.SendAndPack(ctx.caller, message)
 }
 
-func (ctx *Context) SendAfter(target *Address, duration time.Duration, message *any.Any) {
+func (ctx *Context) SendAfter(target *Address, duration time.Duration, message *any.Any) error {
+	if message == nil {
+		return errors.New("cannot send nil message to function")
+	}
+
 	delayedInvocation := &FromFunction_DelayedInvocation{
 		Target:    target,
 		DelayInMs: duration.Milliseconds(),
@@ -150,19 +174,27 @@ func (ctx *Context) SendAfter(target *Address, duration time.Duration, message *
 	}
 
 	ctx.delayedInvocation = append(ctx.delayedInvocation, delayedInvocation)
+	return nil
 }
 
 func (ctx *Context) SendAfterAndPack(target *Address, duration time.Duration, message proto.Message) error {
+	if message == nil {
+		return errors.New("cannot send nil message to function")
+	}
+
 	packedMessage, err := ptypes.MarshalAny(message)
 	if err != nil {
 		return err
 	}
 
-	ctx.SendAfter(target, duration, packedMessage)
-	return nil
+	return ctx.SendAfter(target, duration, packedMessage)
 }
 
-func (ctx *Context) SendEgress(egress Egress, message *any.Any) {
+func (ctx *Context) SendEgress(egress Egress, message *any.Any) error {
+	if message == nil {
+		return errors.New("cannot send nil message to egress")
+	}
+
 	egressMessage := &FromFunction_EgressMessage{
 		EgressNamespace: egress.EgressNamespace,
 		EgressType:      egress.EgressType,
@@ -170,16 +202,50 @@ func (ctx *Context) SendEgress(egress Egress, message *any.Any) {
 	}
 
 	ctx.outgoingEgress = append(ctx.outgoingEgress, egressMessage)
+	return nil
 }
 
 func (ctx *Context) SendEgressAndPack(egress Egress, message proto.Message) error {
+	if message == nil {
+		return errors.New("cannot send nil message to egress")
+	}
+
 	packedMessage, err := ptypes.MarshalAny(message)
 	if err != nil {
 		return err
 	}
 
-	ctx.SendEgress(egress, packedMessage)
-	return nil
+	return ctx.SendEgress(egress, packedMessage)
+}
+
+func (ctx *Context) SendKafka(egress Egress, topic string, key string, message *any.Any) error {
+	if message == nil {
+		return errors.New("cannot send nil message to kafka")
+	}
+	valueBytes, err := proto.Marshal(message)
+	if err != nil {
+		return err
+	}
+	kafkaProducerRecord := &KafkaProducerRecord{
+		Key:        key,
+		Topic:      topic,
+		ValueBytes: valueBytes,
+	}
+
+	return ctx.SendEgressAndPack(egress, kafkaProducerRecord)
+}
+
+func (ctx *Context) SendKafkaAndPack(egress Egress, topic string, key string, message proto.Message) error {
+	if message == nil {
+		return errors.New("cannot send nil message to kafka")
+	}
+
+	packedMessage, err := ptypes.MarshalAny(message)
+	if err != nil {
+		return err
+	}
+
+	return ctx.SendKafka(egress, topic, key, packedMessage)
 }
 
 func (ctx *Context) fromFunction() (*FromFunction, error) {

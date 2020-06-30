@@ -34,6 +34,7 @@ under the License.
         <module>statefun-remote-module-e2e</module>
         <module>statefun-exactly-once-e2e</module>
         <module>statefun-springboot-e2e</module>
+        <module>statefun-go-e2e</module>
     </modules>
 
     <build>

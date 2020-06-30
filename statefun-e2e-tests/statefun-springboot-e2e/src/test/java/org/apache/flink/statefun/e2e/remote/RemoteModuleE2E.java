@@ -3,9 +3,7 @@ package org.apache.flink.statefun.e2e.remote;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
 import org.apache.flink.statefun.e2e.common.StatefulFunctionsAppContainers;
@@ -98,9 +96,9 @@ public class RemoteModuleE2E {
     LOG.info("Building remote function image with spring boot SDK and jar");
 
     return new ImageFromDockerfile("remote-function")
-            .withFileFromClasspath("Dockerfile", "Dockerfile.remote-function")
-            .withFileFromClasspath("application.yaml", "application.yaml")
-            .withFileFromPath(".", Paths.get(System.getProperty("user.dir") + "/target/"));
+        .withFileFromClasspath("Dockerfile", "Dockerfile.remote-function")
+        .withFileFromClasspath("application.yaml", "application.yaml")
+        .withFileFromPath(".", Paths.get(System.getProperty("user.dir") + "/target/"));
   }
 
   private static Producer<String, Invoke> kafkaKeyedInvokesProducer(String bootstrapServers) {
