@@ -33,6 +33,7 @@ under the License.
         <module>statefun-sanity-e2e</module>
         <module>statefun-remote-module-e2e</module>
         <module>statefun-exactly-once-e2e</module>
+        <module>statefun-springboot-e2e</module>
     </modules>
 
     <build>

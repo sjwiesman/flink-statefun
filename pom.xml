@@ -63,6 +63,7 @@ under the License.
             built project artifacts before running the end-to-end tests.
         -->
         <module>statefun-e2e-tests</module>
+        <module>statefun-springboot</module>
     </modules>
 
     <properties>
@@ -261,6 +262,7 @@ under the License.
                         <exclude>**/generated/**</exclude>
                         <!-- Quickstart archetype test configuration -->
                         <exclude>statefun-quickstart/src/test/resources/projects/testArtifact/goal.txt</exclude>
+                        <exclude>statefun-go/**</exclude>
                         <!-- Bundled license files -->
                         <exclude>**/LICENSE*</exclude>
                         <!-- Python venv -->
