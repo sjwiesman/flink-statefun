@@ -51,7 +51,12 @@ func ForwardFunction(message *any.Any, ctx *statefun.Context) error {
 		EgressType:      "invoke-results",
 	}
 
-	return ctx.SendKafka(egress, "invoke-results", ctx.Self().Id, message)
+	kafkaRecord, err := statefun.KafkaEgressRecord("invoke-results", ctx.Self().Id, message)
+	if err != nil {
+		return err
+	}
+
+	return ctx.SendEgressAndPack(egress, kafkaRecord)
 }
 
 func main() {

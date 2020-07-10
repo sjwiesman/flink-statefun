@@ -21,10 +21,10 @@ import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
-class ProtoUtil {
+public class ProtoUtil {
 
   @SuppressWarnings("unchecked")
-  static <T extends Message> T maybeUnpack(Any value, Class<T> type)
+  public static <T extends Message> T maybeUnpack(Any value, Class<T> type)
       throws InvalidTypeException, InvalidProtocolBufferException {
     if (Any.class.isAssignableFrom(type)) {
       return (T) value;
@@ -37,7 +37,7 @@ class ProtoUtil {
     return value.unpack(type);
   }
 
-  static <T extends Message> Any maybePack(T value) {
+  public static <T extends Message> Any maybePack(T value) {
     if (value instanceof Any) {
       return (Any) value;
     }

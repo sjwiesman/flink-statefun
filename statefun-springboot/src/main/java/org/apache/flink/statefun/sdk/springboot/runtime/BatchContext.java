@@ -35,8 +35,6 @@ import org.apache.flink.statefun.flink.core.polyglot.generated.Address;
 import org.apache.flink.statefun.flink.core.polyglot.generated.Egress;
 import org.apache.flink.statefun.flink.core.polyglot.generated.FromFunction;
 import org.apache.flink.statefun.flink.core.polyglot.generated.ToFunction;
-import org.apache.flink.statefun.flink.io.generated.KafkaProducerRecord;
-import org.apache.flink.statefun.flink.io.generated.KinesisEgressRecord;
 import org.apache.flink.statefun.sdk.springboot.Context;
 
 class BatchContext implements Context {
@@ -106,30 +104,6 @@ class BatchContext implements Context {
             .build();
 
     response.addOutgoingEgresses(egressMessage);
-  }
-
-  @Override
-  public <T extends Message> void sendToKafka(Egress target, String topic, String key, T message) {
-    send(
-        target,
-        KafkaProducerRecord.newBuilder()
-            .setTopic(topic)
-            .setKey(key)
-            .setValueBytes(maybePack(message).toByteString())
-            .build());
-  }
-
-  @Override
-  public <T extends Message> void sendToKinesis(
-      Egress target, String stream, String partitionKey, String explicitHash, T message) {
-    send(
-        target,
-        KinesisEgressRecord.newBuilder()
-            .setStream(stream)
-            .setPartitionKey(partitionKey)
-            .setExplicitHashKey(explicitHash)
-            .setValueBytes(maybePack(message).toByteString())
-            .build());
   }
 
   @Override

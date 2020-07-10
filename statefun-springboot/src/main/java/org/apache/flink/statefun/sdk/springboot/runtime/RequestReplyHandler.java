@@ -34,6 +34,7 @@ public class RequestReplyHandler implements HandlerFunction<ServerResponse> {
   }
 
   @Override
+  @NonNull
   public ServerResponse handle(ServerRequest request) throws Exception {
 
     ToFunction toFunction = ToFunction.parseFrom(request.body(byte[].class));

@@ -32,6 +32,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.function.RequestPredicate;
 import org.springframework.web.servlet.function.RequestPredicates;
@@ -48,11 +50,12 @@ public class StatefulFunctionAutoConfiguration implements ApplicationContextAwar
   private ApplicationContext applicationContext;
 
   @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+  public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
   }
 
   @Bean
+  @Nullable
   @SuppressWarnings("unused")
   RouterFunction<ServerResponse> routers() {
     Map<String, Object> modules =
@@ -78,14 +81,14 @@ public class StatefulFunctionAutoConfiguration implements ApplicationContextAwar
     return RouterFunctions.route(predicate, new RequestReplyHandler(module));
   }
 
+  @Nullable
   static ModuleHandler createModule(Object module) {
     StatefulFunctionController controller =
         module.getClass().getAnnotation(StatefulFunctionController.class);
 
     Map<String, FunctionHandler> functionRegistry =
         definedMethods(module.getClass())
-            .filter(method -> method.getAnnotation(StatefulFunction.class) != null)
-            .map(method -> FunctionHandler.create(module, method))
+            .flatMap(method -> createValidHandlers(method, module))
             .collect(Collectors.toMap(FunctionHandler::getFunctionType, func -> func));
 
     if (functionRegistry.isEmpty()) {
@@ -96,6 +99,15 @@ public class StatefulFunctionAutoConfiguration implements ApplicationContextAwar
     }
 
     return new ModuleHandler(controller.path(), functionRegistry);
+  }
+
+  private static Stream<FunctionHandler> createValidHandlers(Method method, Object module) {
+      StatefulFunction annotation = method.getAnnotation(StatefulFunction.class);
+      if (annotation == null) {
+        return Stream.empty();
+      }
+
+      return Stream.of(FunctionHandler.create(module, annotation, method));
   }
 
   private static Stream<Method> definedMethods(Class<?> javaClass) {

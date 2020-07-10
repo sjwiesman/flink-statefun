@@ -218,36 +218,6 @@ func (ctx *Context) SendEgressAndPack(egress Egress, message proto.Message) erro
 	return ctx.SendEgress(egress, packedMessage)
 }
 
-func (ctx *Context) SendKafka(egress Egress, topic string, key string, message *any.Any) error {
-	if message == nil {
-		return errors.New("cannot send nil message to kafka")
-	}
-	valueBytes, err := proto.Marshal(message)
-	if err != nil {
-		return err
-	}
-	kafkaProducerRecord := &KafkaProducerRecord{
-		Key:        key,
-		Topic:      topic,
-		ValueBytes: valueBytes,
-	}
-
-	return ctx.SendEgressAndPack(egress, kafkaProducerRecord)
-}
-
-func (ctx *Context) SendKafkaAndPack(egress Egress, topic string, key string, message proto.Message) error {
-	if message == nil {
-		return errors.New("cannot send nil message to kafka")
-	}
-
-	packedMessage, err := ptypes.MarshalAny(message)
-	if err != nil {
-		return err
-	}
-
-	return ctx.SendKafka(egress, topic, key, packedMessage)
-}
-
 func (ctx *Context) fromFunction() (*FromFunction, error) {
 	var mutations []*FromFunction_PersistedValueMutation
 	for name, state := range ctx.states {

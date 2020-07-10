@@ -47,7 +47,7 @@ public class ModuleHandlerTest {
 
     ModuleHandler handler =
         StatefulFunctionAutoConfiguration.createModule(new GreetFunctions(new TestGenerator()));
-    Assert.assertNotNull(handler);
+    Assert.assertNotNull("Failed to create handler", handler);
 
     FromFunction response = handler.handle(request);
 

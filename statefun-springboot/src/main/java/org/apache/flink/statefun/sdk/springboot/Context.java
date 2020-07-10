@@ -33,11 +33,6 @@ public interface Context {
 
   <T extends Message> void send(Egress target, T message);
 
-  <T extends Message> void sendToKafka(Egress target, String topic, String key, T message);
-
-  <T extends Message> void sendToKinesis(
-      Egress target, String stream, String partitionKey, String explicitHash, T message);
-
   <T extends Message> void reply(T message);
 
   <T extends Message> void sendAfter(Address target, Duration duration, T message);

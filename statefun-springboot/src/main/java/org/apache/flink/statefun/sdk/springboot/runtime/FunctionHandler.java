@@ -29,8 +29,7 @@ import org.apache.flink.statefun.sdk.springboot.annotations.StatefulFunction;
 
 class FunctionHandler {
 
-  static FunctionHandler create(Object object, Method method) {
-    StatefulFunction annotation = method.getAnnotation(StatefulFunction.class);
+  static FunctionHandler create(Object object, StatefulFunction annotation, Method method) {
     String functionType = FunctionType.fromAnnotation(annotation);
 
     int numParameters = method.getParameterCount();
