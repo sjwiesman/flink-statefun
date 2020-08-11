@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.flink.annotation.VisibleForTesting;
-import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
-import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverses;
 import org.apache.flink.statefun.flink.core.message.Message;
 import org.apache.flink.statefun.flink.core.message.MessageFactory;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryType;
@@ -48,24 +46,20 @@ public final class IngressRouterOperator<T> extends AbstractStreamOperator<Messa
 
   private static final long serialVersionUID = 1;
 
-  private final StatefulFunctionsConfig configuration;
+  private final transient StatefulFunctionsUniverse universe;
   private final IngressIdentifier<T> id;
   private transient List<Router<T>> routers;
   private transient DownstreamCollector<T> downstream;
 
-  IngressRouterOperator(StatefulFunctionsConfig configuration, IngressIdentifier<T> id) {
-    this.configuration = configuration;
-    this.id = Objects.requireNonNull(id);
+  IngressRouterOperator(StatefulFunctionsUniverse universe, IngressIdentifier<T> id) {
+    this.universe = Objects.requireNonNull(universe, "StatefulFunctionsUniverse must not be null");
+    this.id = Objects.requireNonNull(id, "Ingress Id must not be null");
     this.chainingStrategy = ChainingStrategy.ALWAYS;
   }
 
   @Override
   public void open() throws Exception {
     super.open();
-
-    StatefulFunctionsUniverse universe =
-        StatefulFunctionsUniverses.get(
-            Thread.currentThread().getContextClassLoader(), configuration);
 
     LOG.info("Using message factory type " + universe.messageFactoryType());
 

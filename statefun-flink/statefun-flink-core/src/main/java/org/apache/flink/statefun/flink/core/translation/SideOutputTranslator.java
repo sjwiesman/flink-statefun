@@ -20,6 +20,7 @@ package org.apache.flink.statefun.flink.core.translation;
 import java.util.Map;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
+import org.apache.flink.statefun.flink.core.classloader.TransientTypeInformation;
 import org.apache.flink.statefun.flink.core.common.Maps;
 import org.apache.flink.statefun.flink.core.types.StaticallyRegisteredTypes;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
@@ -38,7 +39,7 @@ final class SideOutputTranslator {
     EgressIdentifier<Object> casted = (EgressIdentifier<Object>) id;
     String name = String.format("%s.%s", id.namespace(), id.name());
     TypeInformation<Object> typeInformation = types.registerType(casted.consumedType());
-    return new OutputTag<>(name, typeInformation);
+    return new OutputTag<>(name, new TransientTypeInformation<>(typeInformation));
   }
 
   Map<EgressIdentifier<?>, OutputTag<Object>> translate() {

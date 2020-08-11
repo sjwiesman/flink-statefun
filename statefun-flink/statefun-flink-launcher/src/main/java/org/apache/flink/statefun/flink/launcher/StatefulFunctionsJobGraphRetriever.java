@@ -20,11 +20,6 @@ package org.apache.flink.statefun.flink.launcher;
 import static java.util.Objects.requireNonNull;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobID;
 import org.apache.flink.client.program.PackagedProgram;
@@ -37,7 +32,6 @@ import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.jobgraph.SavepointRestoreSettings;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsJob;
 import org.apache.flink.statefun.flink.core.spi.Constants;
-import org.apache.flink.statefun.flink.core.spi.ModuleSpecs;
 import org.apache.flink.util.FlinkException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,22 +64,6 @@ final class StatefulFunctionsJobGraphRetriever implements JobGraphRetriever {
     this.programArguments = requireNonNull(programArguments, "programArguments");
   }
 
-  private static List<URL> obtainModuleAdditionalClassPath() {
-    try {
-      ModuleSpecs specs = ModuleSpecs.fromPath(Constants.MODULE_DIRECTORY);
-      List<URL> classPath = new ArrayList<>();
-      for (ModuleSpecs.ModuleSpec spec : specs) {
-        for (URI uri : spec.artifactUris()) {
-          classPath.add(uri.toURL());
-        }
-      }
-      return classPath;
-    } catch (IOException e) {
-      throw new RuntimeException(
-          "Unable to load modules from path " + Constants.MODULE_DIRECTORY, e);
-    }
-  }
-
   @Override
   public JobGraph retrieveJobGraph(Configuration configuration) throws FlinkException {
     final PackagedProgram packagedProgram = createPackagedProgram();
@@ -116,7 +94,6 @@ final class StatefulFunctionsJobGraphRetriever implements JobGraphRetriever {
     try {
       return PackagedProgram.newBuilder()
           .setJarFile(mainJar)
-          .setUserClassPaths(obtainModuleAdditionalClassPath())
           .setEntryPointClassName(StatefulFunctionsJob.class.getName())
           .setArguments(programArguments)
           .build();

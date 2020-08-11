@@ -19,19 +19,36 @@ package org.apache.flink.statefun.flink.core.translation;
 
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.flink.statefun.sdk.io.IngressSpec;
+import org.apache.flink.streaming.api.functions.source.ParallelSourceFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 final class DecoratedSource {
-  final String name;
+  private final String name;
 
-  final String uid;
+  private final String uid;
 
-  final SourceFunction<?> source;
+  private final SourceFunction<?> source;
 
   private DecoratedSource(String name, String uid, SourceFunction<?> source) {
     this.name = name;
     this.uid = uid;
     this.source = source;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getUid() {
+    return uid;
+  }
+
+  public SourceFunction<?> getSource() {
+    return source;
+  }
+
+  public boolean isParallel() {
+    return source instanceof ParallelSourceFunction;
   }
 
   public static DecoratedSource of(IngressSpec<?> spec, SourceFunction<?> source) {

@@ -54,8 +54,8 @@ public final class FlinkUniverse {
   }
 
   public void configure(StreamExecutionEnvironment env) {
-    Sources sources = Sources.create(env, universe, configuration);
-    Sinks sinks = Sinks.create(universe);
+    Sources sources = Sources.create(env, configuration, universe, configuration);
+    Sinks sinks = Sinks.create(configuration, universe);
 
     SingleOutputStreamOperator<Message> feedbackUnionOperator =
         feedbackUnionOperator(sources.unionStream());
@@ -89,7 +89,7 @@ public final class FlinkUniverse {
     TypeInformation<Message> typeInfo = input.getType();
 
     FunctionGroupDispatchFactory operatorFactory =
-        new FunctionGroupDispatchFactory(configuration, sideOutputs);
+        FunctionGroupDispatchFactory.create(configuration, sideOutputs);
 
     return DataStreamUtils.reinterpretAsKeyedStream(input, new MessageKeySelector())
         .transform(StatefulFunctionsJobConstants.FUNCTION_OPERATOR_NAME, typeInfo, operatorFactory)

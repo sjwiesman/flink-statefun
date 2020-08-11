@@ -19,28 +19,36 @@ package org.apache.flink.statefun.flink.core.translation;
 
 import java.util.Map;
 import java.util.Objects;
+import org.apache.flink.api.java.typeutils.InputTypeConfigurable;
+import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
+import org.apache.flink.statefun.flink.core.classloader.ModuleAwareUdfStreamOperatorFactory;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.apache.flink.streaming.api.operators.StreamSink;
+import org.apache.flink.streaming.api.transformations.SinkTransformation;
 import org.apache.flink.util.OutputTag;
 
 final class Sinks {
+  private final StatefulFunctionsConfig configuration;
   private final Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs;
   private final Map<EgressIdentifier<?>, DecoratedSink> sinks;
 
   private Sinks(
+      StatefulFunctionsConfig configuration,
       Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs,
       Map<EgressIdentifier<?>, DecoratedSink> sinks) {
+    this.configuration = configuration;
 
     this.sideOutputs = Objects.requireNonNull(sideOutputs);
     this.sinks = Objects.requireNonNull(sinks);
   }
 
-  static Sinks create(StatefulFunctionsUniverse universe) {
-    return new Sinks(sideOutputs(universe), sinkFunctions(universe));
+  static Sinks create(StatefulFunctionsConfig config, StatefulFunctionsUniverse universe) {
+    return new Sinks(config, sideOutputs(universe), sinkFunctions(universe));
   }
 
   private static Map<EgressIdentifier<?>, DecoratedSink> sinkFunctions(
@@ -66,11 +74,24 @@ final class Sinks {
 
           DecoratedSink decoratedSink = sinks.get(id);
           @SuppressWarnings("unchecked")
-          SinkFunction<Object> sink = (SinkFunction<Object>) decoratedSink.sink;
+          SinkFunction<Object> sink = (SinkFunction<Object>) decoratedSink.getSink();
 
-          DataStreamSink<Object> streamSink = sideOutputStream.addSink(sink);
-          streamSink.name(decoratedSink.name);
-          streamSink.uid(decoratedSink.uid);
+          if (sink instanceof InputTypeConfigurable) {
+            ((InputTypeConfigurable) sideOutputStream)
+                .setInputType(sideOutputStream.getType(), sideOutputStream.getExecutionConfig());
+          }
+
+          StreamExecutionEnvironment env = sideOutputStream.getExecutionEnvironment();
+          StreamSink<Object> operator = new StreamSink<>(env.clean(sink));
+          SinkTransformation<Object> transformation =
+              new SinkTransformation<>(
+                  sideOutputStream.getTransformation(),
+                  decoratedSink.getName(),
+                  ModuleAwareUdfStreamOperatorFactory.of(configuration, operator),
+                  env.getParallelism());
+
+          transformation.setUid(decoratedSink.getUid());
+          env.addOperator(transformation);
         });
   }
 }
