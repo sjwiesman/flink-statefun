@@ -56,15 +56,13 @@ final class RouterTranslator {
     IngressIdentifier<Object> castedId = (IngressIdentifier<Object>) id;
     DataStream<Object> castedSource = (DataStream<Object>) sourceStream;
 
-    IngressRouterOperator<Object> router = new IngressRouterOperator<>(configuration, castedId);
-
     TypeInformation<Message> typeInfo = universe.types().registerType(Message.class);
 
     int sourceParallelism = castedSource.getParallelism();
 
     String operatorName = StatefulFunctionsJobConstants.ROUTER_NAME + " (" + castedId.name() + ")";
     return castedSource
-        .transform(operatorName, typeInfo, router)
+        .transform(operatorName, typeInfo, IngressRouterFactory.create(configuration, castedId))
         .setParallelism(sourceParallelism)
         .returns(typeInfo);
   }
