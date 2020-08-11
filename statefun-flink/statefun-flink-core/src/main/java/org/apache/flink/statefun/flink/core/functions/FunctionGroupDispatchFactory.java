@@ -17,30 +17,47 @@
  */
 package org.apache.flink.statefun.flink.core.functions;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
+import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
+import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverses;
+import org.apache.flink.statefun.flink.core.classloader.ModuleClassLoader;
 import org.apache.flink.statefun.flink.core.message.Message;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.streaming.api.operators.*;
 import org.apache.flink.util.OutputTag;
+import org.apache.flink.util.SerializedValue;
 
 public final class FunctionGroupDispatchFactory
     implements OneInputStreamOperatorFactory<Message, Message>, YieldingOperatorFactory<Message> {
 
   private static final long serialVersionUID = 1;
 
+  public static FunctionGroupDispatchFactory create(
+      StatefulFunctionsConfig configuration,
+      Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs) {
+    try {
+      SerializedValue<Map<EgressIdentifier<?>, OutputTag<Object>>> serializedSideOutputs =
+          new SerializedValue<>(sideOutputs);
+      return new FunctionGroupDispatchFactory(configuration, serializedSideOutputs);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to serialized egress side outputs", e);
+    }
+  }
+
   private final StatefulFunctionsConfig configuration;
 
-  private final Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs;
+  private final SerializedValue<Map<EgressIdentifier<?>, OutputTag<Object>>> serializedSideOutputs;
 
   private transient MailboxExecutor mailboxExecutor;
 
-  public FunctionGroupDispatchFactory(
+  private FunctionGroupDispatchFactory(
       StatefulFunctionsConfig configuration,
-      Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs) {
+      SerializedValue<Map<EgressIdentifier<?>, OutputTag<Object>>> serializedSideOutputs) {
     this.configuration = configuration;
-    this.sideOutputs = sideOutputs;
+    this.serializedSideOutputs = serializedSideOutputs;
   }
 
   @Override
@@ -52,8 +69,22 @@ public final class FunctionGroupDispatchFactory
   @Override
   public <T extends StreamOperator<Message>> T createStreamOperator(
       StreamOperatorParameters<Message> streamOperatorParameters) {
+
+    ClassLoader moduleClassLoader =
+        ModuleClassLoader.createModuleClassLoader(
+            configuration, streamOperatorParameters.getContainingTask().getUserCodeClassLoader());
+    StatefulFunctionsUniverse universe =
+        StatefulFunctionsUniverses.get(moduleClassLoader, configuration);
+
+    Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs = null;
+    try {
+      sideOutputs = serializedSideOutputs.deserializeValue(moduleClassLoader);
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException("Failed to deserialize egress side outputs", e);
+    }
     FunctionGroupOperator fn =
         new FunctionGroupOperator(
+            universe,
             sideOutputs,
             configuration,
             mailboxExecutor,
