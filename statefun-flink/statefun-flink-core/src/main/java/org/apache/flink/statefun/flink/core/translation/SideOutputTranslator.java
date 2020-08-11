@@ -19,30 +19,36 @@ package org.apache.flink.statefun.flink.core.translation;
 
 import java.util.Map;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
+import org.apache.flink.statefun.flink.core.classloader.ModuleAwareTypeInformation;
 import org.apache.flink.statefun.flink.core.common.Maps;
 import org.apache.flink.statefun.flink.core.types.StaticallyRegisteredTypes;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.util.OutputTag;
 
 final class SideOutputTranslator {
+  private final StatefulFunctionsConfig configuration;
   private final StatefulFunctionsUniverse universe;
 
-  SideOutputTranslator(StatefulFunctionsUniverse universe) {
+  SideOutputTranslator(StatefulFunctionsConfig configuration, StatefulFunctionsUniverse universe) {
+    this.configuration = configuration;
     this.universe = universe;
   }
 
   private static OutputTag<Object> outputTagFromId(
-      EgressIdentifier<?> id, StaticallyRegisteredTypes types) {
+      EgressIdentifier<?> id,
+      StatefulFunctionsConfig configuration,
+      StaticallyRegisteredTypes types) {
     @SuppressWarnings("unchecked")
     EgressIdentifier<Object> casted = (EgressIdentifier<Object>) id;
     String name = String.format("%s.%s", id.namespace(), id.name());
     TypeInformation<Object> typeInformation = types.registerType(casted.consumedType());
-    return new OutputTag<>(name, typeInformation);
+    return new OutputTag<>(name, ModuleAwareTypeInformation.of(configuration, typeInformation));
   }
 
   Map<EgressIdentifier<?>, OutputTag<Object>> translate() {
     return Maps.transformValues(
-        universe.egress(), (id, unused) -> outputTagFromId(id, universe.types()));
+        universe.egress(), (id, unused) -> outputTagFromId(id, configuration, universe.types()));
   }
 }

@@ -17,15 +17,12 @@
  */
 package org.apache.flink.statefun.flink.core;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.runtime.execution.librarycache.FlinkUserCodeClassLoaders;
+import org.apache.flink.statefun.flink.core.classloader.ModuleClassLoader;
 import org.apache.flink.statefun.flink.core.translation.FlinkUniverse;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.util.FlinkUserCodeClassLoader;
 
 public class StatefulFunctionsJob {
 
@@ -37,6 +34,7 @@ public class StatefulFunctionsJob {
     StatefulFunctionsConfig stateFunConfig = StatefulFunctionsConfig.fromEnvironment(env);
     stateFunConfig.addAllGlobalConfigurations(globalConfigurations);
     stateFunConfig.setProvider(new StatefulFunctionsUniverses.ClassPathUniverseProvider());
+    stateFunConfig.enableModuleClassPath();
 
     main(env, stateFunConfig);
   }
@@ -52,7 +50,7 @@ public class StatefulFunctionsJob {
     Objects.requireNonNull(env);
     Objects.requireNonNull(stateFunConfig);
 
-    setDefaultContextClassLoaderIfAbsent();
+    setModuleContextClassLoader(stateFunConfig);
 
     env.getConfig().enableObjectReuse();
 
@@ -70,15 +68,9 @@ public class StatefulFunctionsJob {
     env.execute(stateFunConfig.getFlinkJobName());
   }
 
-  private static void setDefaultContextClassLoaderIfAbsent() {
+  private static void setModuleContextClassLoader(StatefulFunctionsConfig config) {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    if (classLoader == null) {
-      URLClassLoader flinkClassLoader =
-          FlinkUserCodeClassLoaders.parentFirst(
-              new URL[0],
-              StatefulFunctionsJob.class.getClassLoader(),
-              FlinkUserCodeClassLoader.NOOP_EXCEPTION_HANDLER);
-      Thread.currentThread().setContextClassLoader(flinkClassLoader);
-    }
+    ClassLoader moduleClassLoader = ModuleClassLoader.createModuleClassLoader(config, classLoader);
+    Thread.currentThread().setContextClassLoader(moduleClassLoader);
   }
 }

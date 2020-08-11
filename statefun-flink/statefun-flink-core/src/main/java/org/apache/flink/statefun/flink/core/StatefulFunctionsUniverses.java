@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.apache.flink.statefun.flink.core.spi.Modules;
 import org.apache.flink.util.Preconditions;
+import org.apache.flink.util.TemporaryClassLoaderContext;
 
 public final class StatefulFunctionsUniverses {
 
@@ -53,8 +54,10 @@ public final class StatefulFunctionsUniverses {
     @Override
     public StatefulFunctionsUniverse get(
         ClassLoader classLoader, StatefulFunctionsConfig configuration) {
-      Modules modules = Modules.loadFromClassPath();
-      return modules.createStatefulFunctionsUniverse(configuration);
+      try (TemporaryClassLoaderContext ignored = TemporaryClassLoaderContext.of(classLoader)) {
+        Modules modules = Modules.loadFromClassPath();
+        return modules.createStatefulFunctionsUniverse(configuration);
+      }
     }
   }
 }

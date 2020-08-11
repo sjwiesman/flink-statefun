@@ -22,16 +22,28 @@ import org.apache.flink.statefun.sdk.io.EgressSpec;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 
 final class DecoratedSink {
-  final String name;
+  private final String name;
 
-  final String uid;
+  private final String uid;
 
-  final SinkFunction<?> sink;
+  private final SinkFunction<?> sink;
 
   private DecoratedSink(String name, String uid, SinkFunction<?> sink) {
     this.name = name;
     this.uid = uid;
     this.sink = sink;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getUid() {
+    return uid;
+  }
+
+  public SinkFunction<?> getSink() {
+    return sink;
   }
 
   public static DecoratedSink of(EgressSpec<?> spec, SinkFunction<?> sink) {
