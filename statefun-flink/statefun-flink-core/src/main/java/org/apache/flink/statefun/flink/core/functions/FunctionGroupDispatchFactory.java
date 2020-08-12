@@ -76,7 +76,7 @@ public final class FunctionGroupDispatchFactory
     StatefulFunctionsUniverse universe =
         StatefulFunctionsUniverses.get(moduleClassLoader, configuration);
 
-    Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs = null;
+    Map<EgressIdentifier<?>, OutputTag<Object>> sideOutputs;
     try {
       sideOutputs = serializedSideOutputs.deserializeValue(moduleClassLoader);
     } catch (IOException | ClassNotFoundException e) {

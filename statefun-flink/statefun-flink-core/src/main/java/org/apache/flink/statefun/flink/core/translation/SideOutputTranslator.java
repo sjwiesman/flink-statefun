@@ -39,6 +39,11 @@ final class SideOutputTranslator {
     EgressIdentifier<Object> casted = (EgressIdentifier<Object>) id;
     String name = String.format("%s.%s", id.namespace(), id.name());
     TypeInformation<Object> typeInformation = types.registerType(casted.consumedType());
+
+    // The type information might refer to a class that only exists
+    // on the module classloader. However, the type info field of the
+    // output tag is only ever used to generate the stream graph
+    // so we can safely mark it transient.
     return new OutputTag<>(name, new TransientTypeInformation<>(typeInformation));
   }
 

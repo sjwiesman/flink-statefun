@@ -16,9 +16,6 @@
  */
 package org.apache.flink.statefun.flink.core.classloader;
 
-import java.io.IOException;
-import java.util.Objects;
-import javax.annotation.Nullable;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.functions.Function;
@@ -28,14 +25,16 @@ import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.streaming.api.operators.AbstractUdfStreamOperator;
 import org.apache.flink.streaming.api.operators.ChainingStrategy;
 import org.apache.flink.streaming.api.operators.OutputTypeConfigurable;
-import org.apache.flink.streaming.api.operators.SimpleOperatorFactory;
 import org.apache.flink.streaming.api.operators.SimpleUdfStreamOperatorFactory;
 import org.apache.flink.streaming.api.operators.StreamOperator;
 import org.apache.flink.streaming.api.operators.StreamOperatorParameters;
 import org.apache.flink.streaming.api.operators.StreamSource;
 import org.apache.flink.streaming.api.operators.UdfStreamOperatorFactory;
-import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
 import org.apache.flink.util.SerializedValue;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A variant of Flink's {@link SimpleUdfStreamOperatorFactory} that includes users statefun modules
@@ -45,8 +44,7 @@ import org.apache.flink.util.SerializedValue;
  */
 @Internal
 @SuppressWarnings({"deprecation", "unchecked", "rawtypes"})
-public class ModuleAwareUdfStreamOperatorFactory<OUT> extends SimpleOperatorFactory<OUT>
-    implements UdfStreamOperatorFactory<OUT> {
+public class ModuleAwareUdfStreamOperatorFactory<OUT> implements UdfStreamOperatorFactory<OUT> {
 
   private static final long serialVersionUID = 1L;
 
@@ -82,6 +80,8 @@ public class ModuleAwareUdfStreamOperatorFactory<OUT> extends SimpleOperatorFact
 
   private final boolean isInputTypeConfigurable;
 
+  private ChainingStrategy chainingStrategy;
+
   @Nullable private TypeInformation<?> inputType;
 
   @Nullable private TypeInformation<OUT> outputType;
@@ -98,13 +98,12 @@ public class ModuleAwareUdfStreamOperatorFactory<OUT> extends SimpleOperatorFact
       boolean isStreamSource,
       boolean isInputTypeConfigurable) {
 
-    super(new UnimplementedStreamOperator<>());
-
     this.configuration = Objects.requireNonNull(configuration);
     this.serializedOperator = Objects.requireNonNull(serializedOperator);
     this.type = Objects.requireNonNull(type);
     this.isStreamSource = isStreamSource;
     this.isInputTypeConfigurable = isInputTypeConfigurable;
+    this.chainingStrategy = operator.getChainingStrategy();
     this.functionName = operator.getUserFunction().getClass().getName();
     this.userFunction = operator.getUserFunction();
   }
@@ -122,7 +121,7 @@ public class ModuleAwareUdfStreamOperatorFactory<OUT> extends SimpleOperatorFact
       throw new RuntimeException("Failed to deserialize stream operator", e);
     }
 
-    operator.setProcessingTimeService(processingTimeService);
+    operator.setProcessingTimeService(parameters.getProcessingTimeService());
     operator.setChainingStrategy(chainingStrategy);
     operator.setup(
         parameters.getContainingTask(), parameters.getStreamConfig(), parameters.getOutput());
@@ -173,11 +172,6 @@ public class ModuleAwareUdfStreamOperatorFactory<OUT> extends SimpleOperatorFact
   @Override
   public void setOutputType(TypeInformation<OUT> type, ExecutionConfig executionConfig) {
     this.outputType = type;
-  }
-
-  @Override
-  public void setProcessingTimeService(ProcessingTimeService processingTimeService) {
-    this.processingTimeService = processingTimeService;
   }
 
   @Override
