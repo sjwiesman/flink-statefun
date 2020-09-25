@@ -37,14 +37,14 @@ services:
       - ./kafka:/kafka
   master:
     build:
-      dockerfile: Dockerfile.functions
+      dockerfile: Dockerfile.runtime
       context: .
     # uncomment to start from a savepoint
     #command: -s /checkpoint-dir/savepoint/savepoint-bf101a-4e99820085fe
     expose:
       - "6123"
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
       - ROLE=master
       - MASTER_HOST=master
@@ -52,7 +52,7 @@ services:
       - ./checkpoint-dir:/checkpoint-dir
   worker:
     build:
-      dockerfile: Dockerfile.functions
+      dockerfile: Dockerfile.runtime
       context: .
     expose:
       - "6121"
@@ -68,6 +68,11 @@ services:
       - MASTER_HOST=master
     volumes:
       - ./checkpoint-dir:/checkpoint-dir
+  go-worker:
+    build:
+      context: ./statefun-ridesharing-example-functions
+    expose:
+      - "8000"
   simulator:
     build:
       context: statefun-ridesharing-example-simulator

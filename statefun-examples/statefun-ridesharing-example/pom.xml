@@ -31,7 +31,6 @@ under the License.
 
     <modules>
         <module>statefun-ridesharing-protocol</module>
-        <module>statefun-ridesharing-example-functions</module>
         <module>statefun-ridesharing-example-simulator</module>
     </modules>
 

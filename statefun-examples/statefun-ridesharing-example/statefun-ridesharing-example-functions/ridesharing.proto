@@ -39,7 +39,7 @@ message InboundPassengerMessage {
     }
 
     string passenger_id = 1;
-
+    
     oneof message {
         RequestRide request_ride = 2;
     }
@@ -47,8 +47,8 @@ message InboundPassengerMessage {
 
 // the messages that corresponds to the TO_PASSENGER_EGRESS
 message OutboundPassengerMessage {
-
-    // A message that is sent to the passenger, when there is a driver that
+    
+    // A message that is sent to the passenger, when there is a driver that 
     // is ready to pick them up.
     message DriverHasBeenFound {
         string driver_id = 2;
@@ -95,7 +95,7 @@ message InboundDriverMessage {
     }
 
     string driver_id = 1;
-
+    
     oneof message {
         RideStarted ride_started = 2;
         RideEnded ride_ended = 3;

@@ -15,6 +15,7 @@
 
 FROM flink-statefun:2.2-SNAPSHOT
 
+RUN echo "execution.checkpointing.interval: 30sec" >> /opt/flink/conf/flink-conf.yaml;
+
 RUN mkdir -p /opt/statefun/modules/statefun-ridesharing-example
-COPY statefun-ridesharing-example-functions/target/statefun-ridesharing-example*jar /opt/statefun/modules/statefun-ridesharing-example/
-COPY statefun-ridesharing-protocol/target/statefun-ridesharing-protocol*jar /opt/statefun/modules/statefun-ridesharing-example/
+COPY module.yaml /opt/statefun/modules/statefun-ridesharing-example/
