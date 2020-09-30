@@ -14,27 +14,27 @@ var (
 
 	Driver = statefun.FunctionType{
 		Namespace: "ridesharing",
-		Type:      "driver",
+		Type:      "rDriver",
 	}
 
 	Ride = statefun.FunctionType{
 		Namespace: "ridesharing",
-		Type:      "ride",
+		Type:      "dRide",
 	}
 
 	Passenger = statefun.FunctionType{
 		Namespace: "ridesharing",
-		Type:      "passenger",
+		Type:      "rPassenger",
 	}
 
 	ToPassengerEgress = io.EgressIdentifier{
 		EgressNamespace: "ridesharing",
-		EgressType:      "to-passenger",
+		EgressType:      "to-rPassenger",
 	}
 
 	ToDriverEgress = io.EgressIdentifier{
 		EgressNamespace: "ridesharing",
-		EgressType:      "to-driver",
+		EgressType:      "to-rDriver",
 	}
 )
 
@@ -46,6 +46,6 @@ func main() {
 	registry.RegisterFunctionPointer(Passenger, PassengerFunc)
 	registry.RegisterFunctionPointer(Ride, RideFunc)
 
-	http.Handle("/statefun", registry)
+	http.Handle("/functions", registry)
 	_ = http.ListenAndServe(":8000", nil)
 }

@@ -1064,7 +1064,7 @@ type CurrentLocation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Location int32 `protobuf:"varint,1,opt,name=location,proto3" json:"location,omitempty"`
+	Location int32 `protobuf:"varint,1,opt,name=dLocation,proto3" json:"dLocation,omitempty"`
 }
 
 func (x *CurrentLocation) Reset() {
@@ -1153,7 +1153,7 @@ func (x *CurrentDriver) GetDriverId() string {
 	return ""
 }
 
-// A message sent by the physical driver to the ridesharing statefun job, indicating that the user
+// A message sent by the physical rDriver to the ridesharing statefun job, indicating that the user
 // would like to be picked up from start_geo_cell and dropped off at end_geo_cell
 type InboundPassengerMessage_RequestRide struct {
 	state         protoimpl.MessageState
@@ -1210,7 +1210,7 @@ func (x *InboundPassengerMessage_RequestRide) GetEndGeoCell() int32 {
 	return 0
 }
 
-// A message that is sent to the passenger, when there is a driver that
+// A message that is sent to the rPassenger, when there is a rDriver that
 // is ready to pick them up.
 type OutboundPassengerMessage_DriverHasBeenFound struct {
 	state         protoimpl.MessageState
@@ -1267,8 +1267,8 @@ func (x *OutboundPassengerMessage_DriverHasBeenFound) GetDriverGeoCell() int32 {
 	return 0
 }
 
-// A message that is sent to the passenger when the system couldn't find in reasonable time
-// a driver to pickup the passenger.
+// A message that is sent to the rPassenger when the system couldn't find in reasonable time
+// a rDriver to pickup the rPassenger.
 type OutboundPassengerMessage_RideFailed struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1316,7 +1316,7 @@ func (x *OutboundPassengerMessage_RideFailed) GetRideId() string {
 	return ""
 }
 
-// A notification that is sent to the passenger indicating that the ride has started.
+// A notification that is sent to the rPassenger indicating that the dRide has started.
 type OutboundPassengerMessage_RideStarted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1364,7 +1364,7 @@ func (x *OutboundPassengerMessage_RideStarted) GetDriverId() string {
 	return ""
 }
 
-// A notification that is sent to the passenger indicating that the ride has end.
+// A notification that is sent to the rPassenger indicating that the dRide has end.
 type OutboundPassengerMessage_RideEnded struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1403,7 +1403,7 @@ func (*OutboundPassengerMessage_RideEnded) Descriptor() ([]byte, []int) {
 	return file_ridesharing_proto_rawDescGZIP(), []int{1, 3}
 }
 
-// A message the driver sends once they pickup the passenger
+// A message the rDriver sends once they pickup the rPassenger
 type InboundDriverMessage_RideStarted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1442,7 +1442,7 @@ func (*InboundDriverMessage_RideStarted) Descriptor() ([]byte, []int) {
 	return file_ridesharing_proto_rawDescGZIP(), []int{2, 0}
 }
 
-// A message the driver sends when they drop off the passenger.
+// A message the rDriver sends when they drop off the rPassenger.
 type InboundDriverMessage_RideEnded struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1490,7 +1490,7 @@ func (x *InboundDriverMessage_RideEnded) GetRideId() string {
 	return ""
 }
 
-// A periodic location update message
+// A periodic dLocation update message
 type InboundDriverMessage_LocationUpdate struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1538,7 +1538,7 @@ func (x *InboundDriverMessage_LocationUpdate) GetCurrentGeoCell() int32 {
 	return 0
 }
 
-// A message that is sent to the physical driver to indicate that
+// A message that is sent to the physical rDriver to indicate that
 // a pickup is needed.
 // a pickup is needed.
 type OutboundDriverMessage_PickupPassenger struct {

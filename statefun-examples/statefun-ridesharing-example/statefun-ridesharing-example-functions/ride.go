@@ -3,44 +3,43 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/sjwiesman/statefun-go/pkg/flink/statefun"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 const (
-	passenger = "passenger"
-	driver    = "driver"
+	rPassenger = "passenger"
+	rDriver    = "driver"
 )
 
-func RideFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg *any.Any) error {
+func RideFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg *anypb.Any) error {
 	join := PassengerJoinsRide{}
-	if err := ptypes.UnmarshalAny(msg, &join); err == nil {
+	if err := msg.UnmarshalTo(&join); err == nil {
 		return whenPassengerJoinsRide(runtime, &join)
 	}
 
 	driverInCell := DriverInCell{}
-	if err := ptypes.UnmarshalAny(msg, &driverInCell); err == nil {
+	if err := msg.UnmarshalTo(&driverInCell); err == nil {
 		return whenGeoCellResponds(runtime, &driverInCell)
 	}
 
 	reject := DriverRejectsPickup{}
-	if err := ptypes.UnmarshalAny(msg, &reject); err == nil {
+	if err := msg.UnmarshalTo(&reject); err == nil {
 		return whenDriverRejectsPickup(runtime)
 	}
 
 	joinsRide := DriverJoinsRide{}
-	if err := ptypes.UnmarshalAny(msg, &joinsRide); err == nil {
+	if err := msg.UnmarshalTo(&joinsRide); err == nil {
 		return whenDriverJoinsRide(ctx, runtime, &joinsRide)
 	}
 
 	rideStarted := RideStarted{}
-	if err := ptypes.UnmarshalAny(msg, &rideStarted); err == nil {
+	if err := msg.UnmarshalTo(&rideStarted); err == nil {
 		return startingRide(runtime, &rideStarted)
 	}
 
 	rideEnded := RideEnded{}
-	if err := ptypes.UnmarshalAny(msg, &rideEnded); err == nil {
+	if err := msg.UnmarshalTo(&rideEnded); err == nil {
 		return endingRide(runtime, &rideEnded)
 	}
 
@@ -53,7 +52,7 @@ func RideFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg
 // 3. contact the geo cell of the starting location
 // and ask for a free driver
 func whenPassengerJoinsRide(runtime statefun.StatefulFunctionRuntime, join *PassengerJoinsRide) error {
-	if err := runtime.Set(passenger, join); err != nil {
+	if err := runtime.Set(rPassenger, join); err != nil {
 		return err
 	}
 
@@ -66,24 +65,23 @@ func whenPassengerJoinsRide(runtime statefun.StatefulFunctionRuntime, join *Pass
 }
 
 // Geo cell responds, it might respond with: - there is no driver, in that case we fail the ride -
-// there is a driver, let's ask them to pickup the passenger.
-
+// there is a driver, let's ask them to pickup the rPassenger.
 func whenGeoCellResponds(runtime statefun.StatefulFunctionRuntime, in *DriverInCell) error {
 	request := PassengerJoinsRide{}
-	if err := runtime.Get(passenger, &request); err != nil {
+	if _, err := runtime.Get(rPassenger, &request); err != nil {
 		return err
 	}
 
 	if len(in.DriverId) == 0 {
-		// no free drivers in this geo cell, at this example we just fail the ride
+		// no free gcDrivers in this geo cell, at this example we just fail the dRide
 		// but we can imagine that this is where we will expand our search to near geo cells
 		passengerAddress := &statefun.Address{
 			FunctionType: Passenger,
 			Id:           request.PassengerId,
 		}
 
-		// by clearing our state, we essentially delete this instance of the ride actor
-		runtime.Clear(passenger)
+		// by clearing our state, we essentially delete this instance of the dRide actor
+		runtime.Clear(rPassenger)
 		return runtime.Send(passengerAddress, &RideFailed{})
 	}
 
@@ -103,15 +101,15 @@ func whenGeoCellResponds(runtime statefun.StatefulFunctionRuntime, in *DriverInC
 }
 
 // A driver might not be free, or for some other reason they cannot take this ride,
-// so we try another driver in that cell.
+// so we try another rDriver in that cell.
 func whenDriverRejectsPickup(runtime statefun.StatefulFunctionRuntime) error {
-	// try another driver, realistically we need to pass in a list of 'banned' drivers,
-	// so that the GeoCell will not offer us these drivers again, but in this example
-	// if a driver rejects a ride, it means that he is currently busy (and it would soon delete
+	// try another rDriver, realistically we need to pass in a list of 'banned' gcDrivers,
+	// so that the GeoCell will not offer us these gcDrivers again, but in this example
+	// if a rDriver rejects a dRide, it means that he is currently busy (and it would soon delete
 	// itself from the geo cell)
 
 	passengerJoinsRide := PassengerJoinsRide{}
-	if err := runtime.Get(passenger, &passengerJoinsRide); err != nil {
+	if _, err := runtime.Get(rPassenger, &passengerJoinsRide); err != nil {
 		return err
 	}
 
@@ -128,12 +126,12 @@ func whenDriverJoinsRide(ctx context.Context, runtime statefun.StatefulFunctionR
 		DriverId: statefun.Caller(ctx).Id,
 	}
 
-	if err := runtime.Set(driver, &currentDriver); err != nil {
+	if err := runtime.Set(rDriver, &currentDriver); err != nil {
 		return err
 	}
 
 	request := PassengerJoinsRide{}
-	if err := runtime.Get(passenger, &request); err != nil {
+	if _, err := runtime.Get(rPassenger, &request); err != nil {
 		return err
 	}
 
@@ -148,7 +146,7 @@ func whenDriverJoinsRide(ctx context.Context, runtime statefun.StatefulFunctionR
 // A driver has successfully picked up the passenger
 func startingRide(runtime statefun.StatefulFunctionRuntime, started *RideStarted) error {
 	request := PassengerJoinsRide{}
-	if err := runtime.Get(passenger, &request); err != nil {
+	if _, err := runtime.Get(rPassenger, &request); err != nil {
 		return err
 	}
 
@@ -163,7 +161,7 @@ func startingRide(runtime statefun.StatefulFunctionRuntime, started *RideStarted
 // The driver has successfully reached the destination
 func endingRide(runtime statefun.StatefulFunctionRuntime, ended *RideEnded) error {
 	request := PassengerJoinsRide{}
-	if err := runtime.Get(passenger, &request); err != nil {
+	if _, err := runtime.Get(rPassenger, &request); err != nil {
 		return err
 	}
 
@@ -172,8 +170,8 @@ func endingRide(runtime statefun.StatefulFunctionRuntime, ended *RideEnded) erro
 		Id:           request.PassengerId,
 	}
 
-	runtime.Clear(passenger)
-	runtime.Clear(driver)
+	runtime.Clear(rPassenger)
+	runtime.Clear(rDriver)
 
 	return runtime.Send(passengerAddress, ended)
 }

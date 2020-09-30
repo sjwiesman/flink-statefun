@@ -2,30 +2,29 @@ package main
 
 import (
 	"context"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/sjwiesman/statefun-go/pkg/flink/statefun"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 const (
-	drivers = "drivers"
+	gcDrivers = "drivers"
 )
 
-func GeoCellFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg *any.Any) error {
+func GeoCellFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg *anypb.Any) error {
 	caller := statefun.Caller(ctx)
 
 	cell := JoinCell{}
-	if err := ptypes.UnmarshalAny(msg, &cell); err == nil {
+	if err := msg.UnmarshalTo(&cell); err == nil {
 		return addDriver(caller.Id, runtime)
 	}
 
 	leave := LeaveCell{}
-	if err := ptypes.UnmarshalAny(msg, &leave); err == nil {
+	if err := msg.UnmarshalTo(&leave); err == nil {
 		return removeDriver(caller.Id, runtime)
 	}
 
 	get := GetDriver{}
-	if err := ptypes.UnmarshalAny(msg, &get); err == nil {
+	if err := msg.UnmarshalTo(&get); err == nil {
 		return getDriver(caller, runtime)
 	}
 
@@ -34,29 +33,29 @@ func GeoCellFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, 
 
 func addDriver(driverId string, runtime statefun.StatefulFunctionRuntime) error {
 	state := GeoCellState{}
-	if err := runtime.Get(drivers, &state); err != nil {
+	if _, err := runtime.Get(gcDrivers, &state); err != nil {
 		return err
 	}
 
 	state.DriverId[driverId] = true
 
-	return runtime.Set(drivers, &state)
+	return runtime.Set(gcDrivers, &state)
 }
 
 func removeDriver(driverId string, runtime statefun.StatefulFunctionRuntime) error {
 	state := GeoCellState{}
-	if err := runtime.Get(drivers, &state); err != nil {
+	if _, err := runtime.Get(gcDrivers, &state); err != nil {
 		return err
 	}
 
 	delete(state.DriverId, driverId)
 
-	return runtime.Set(drivers, &state)
+	return runtime.Set(gcDrivers, &state)
 }
 
 func getDriver(caller *statefun.Address, runtime statefun.StatefulFunctionRuntime) error {
 	state := GeoCellState{}
-	if err := runtime.Get(drivers, &state); err != nil {
+	if _, err := runtime.Get(gcDrivers, &state); err != nil {
 		return err
 	}
 

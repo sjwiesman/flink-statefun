@@ -3,25 +3,24 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/sjwiesman/statefun-go/pkg/flink/statefun"
 	"github.com/sjwiesman/statefun-go/pkg/flink/statefun/io"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
-var (
-	ride     = "ride"
-	location = "location"
+const (
+	dRide     = "ride"
+	dLocation = "location"
 )
 
-func DriverFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg *any.Any) error {
+func DriverFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, msg *anypb.Any) error {
 	pickup := PickupPassenger{}
-	if err := ptypes.UnmarshalAny(msg, &pickup); err == nil {
+	if err := msg.UnmarshalTo(&pickup); err == nil {
 		return pickupNeeded(ctx, runtime, &pickup)
 	}
 
 	driverMessage := InboundDriverMessage{}
-	if err := ptypes.UnmarshalAny(msg, &driverMessage); err == nil {
+	if err := msg.UnmarshalTo(&driverMessage); err == nil {
 		if rideStarted := driverMessage.GetRideStarted(); rideStarted != nil {
 			return whenRideStarted(ctx, runtime)
 		}
@@ -39,7 +38,13 @@ func DriverFunc(ctx context.Context, runtime statefun.StatefulFunctionRuntime, m
 }
 
 func pickupNeeded(ctx context.Context, runtime statefun.StatefulFunctionRuntime, pickup *PickupPassenger) error {
-	if runtime.Exists(ride) {
+	currentRide := CurrentRide{}
+	exists, err := runtime.Get(dRide, &currentRide)
+	if err != nil {
+		return err
+	}
+
+	if exists {
 		// this driver is currently in a ride,
 		// and therefore cannot take anymore
 		// passengers
@@ -53,18 +58,15 @@ func pickupNeeded(ctx context.Context, runtime statefun.StatefulFunctionRuntime,
 		return runtime.Send(caller, &response)
 	}
 
-	// We are called by the ride function, so we remember its id
+	// We are called by the dRide function, so we remember its id
 	// for future communication.
-
-	currentRide := CurrentRide{
-		RideId: statefun.Caller(ctx).Id,
-	}
-	if err := runtime.Set(ride, &currentRide); err != nil {
+	currentRide.RideId = statefun.Caller(ctx).Id
+	if err := runtime.Set(dRide, &currentRide); err != nil {
 		return err
 	}
 
 	currentLocation := CurrentLocation{}
-	if err := runtime.Get(location, &currentLocation); err != nil {
+	if _, err := runtime.Get(dLocation, &currentLocation); err != nil {
 		return err
 	}
 
@@ -78,7 +80,7 @@ func pickupNeeded(ctx context.Context, runtime statefun.StatefulFunctionRuntime,
 		return err
 	}
 
-	// Reply to the ride, saying we are taking this passenger
+	// Reply to the dRide, saying we are taking this rPassenger
 	driverId := statefun.Self(ctx).Id
 	ride := statefun.Caller(ctx)
 	rideId := ride.Id
@@ -92,9 +94,9 @@ func pickupNeeded(ctx context.Context, runtime statefun.StatefulFunctionRuntime,
 		return err
 	}
 
-	// Also send a command to the physical driver to pickup the passenger
+	// Also send a command to the physical rDriver to pickup the rPassenger
 	record := io.KafkaRecord{
-		Topic: "to-driver",
+		Topic: "to-rDriver",
 		Key:   driverId,
 		Value: &OutboundDriverMessage{
 			DriverId: driverId,
@@ -118,12 +120,12 @@ func pickupNeeded(ctx context.Context, runtime statefun.StatefulFunctionRuntime,
 
 func whenRideStarted(ctx context.Context, runtime statefun.StatefulFunctionRuntime) error {
 	currentLocation := CurrentLocation{}
-	if err := runtime.Get(location, &currentLocation); err != nil {
+	if _, err := runtime.Get(dLocation, &currentLocation); err != nil {
 		return err
 	}
 
 	currentRide := CurrentRide{}
-	if err := runtime.Get(ride, &currentRide); err != nil {
+	if _, err := runtime.Get(dRide, &currentRide); err != nil {
 		return err
 	}
 
@@ -142,7 +144,7 @@ func whenRideStarted(ctx context.Context, runtime statefun.StatefulFunctionRunti
 
 func whenRideEnded(runtime statefun.StatefulFunctionRuntime) error {
 	currentRide := CurrentRide{}
-	if err := runtime.Get(ride, &currentRide); err != nil {
+	if _, err := runtime.Get(dRide, &currentRide); err != nil {
 		return nil
 	}
 
@@ -154,11 +156,11 @@ func whenRideEnded(runtime statefun.StatefulFunctionRuntime) error {
 	if err := runtime.Send(rideAddress, &RideEnded{}); err != nil {
 		return err
 	}
-	runtime.Clear(ride)
+	runtime.Clear(dRide)
 
-	// register the driver as free at the current location
+	// register the rDriver as free at the current dLocation
 	currentLocation := CurrentLocation{}
-	if err := runtime.Get(location, &currentLocation); err != nil {
+	if _, err := runtime.Get(dLocation, &currentLocation); err != nil {
 		return err
 	}
 
@@ -171,26 +173,25 @@ func whenRideEnded(runtime statefun.StatefulFunctionRuntime) error {
 }
 
 func whenLocationUpdated(runtime statefun.StatefulFunctionRuntime, update *InboundDriverMessage_LocationUpdate) error {
-	if !runtime.Exists(location) {
-		// this is the first time this driver gets
-		// a location update so we notify the relevant
+	currentLocation := CurrentLocation{}
+	exists, err := runtime.Get(dLocation, &currentLocation)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		// this is the first time this rDriver gets
+		// a dLocation update so we notify the relevant
 		// geo cell function.
 
-		location := &CurrentLocation{
-			Location: update.CurrentGeoCell,
-		}
+		currentLocation.Location = update.CurrentGeoCell
 
 		geoCell := &statefun.Address{
 			FunctionType: GeoCell,
-			Id:           fmt.Sprint(location.Location),
+			Id:           fmt.Sprint(currentLocation.Location),
 		}
 
-		return runtime.Send(geoCell, location)
-	}
-
-	currentLocation := CurrentLocation{}
-	if err := runtime.Get(location, &currentLocation); err != nil {
-		return err
+		return runtime.Send(geoCell, &currentLocation)
 	}
 
 	if currentLocation.Location == update.CurrentGeoCell {
@@ -198,5 +199,5 @@ func whenLocationUpdated(runtime statefun.StatefulFunctionRuntime, update *Inbou
 	}
 
 	currentLocation.Location = update.CurrentGeoCell
-	return runtime.Set(location, &currentLocation)
+	return runtime.Set(dLocation, &currentLocation)
 }
