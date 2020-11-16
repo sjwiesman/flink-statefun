@@ -1,12 +1,9 @@
 ---
-title: "Getting Started"
-nav-id: getting-started
-nav-title: '<i class="fa fa-rocket title appetizer" aria-hidden="true"></i> Getting Started'
-nav-parent_id: root
-section-break: true
-nav-show_overview: false 
-nav-pos: 1
-always-expand: true
+title: "Digital Twins"
+nav-id: digital-twins
+nav-title: 'Digital Twins'
+nav-parent_id: hands-on
+nav-pos: 2
 ---
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -26,3 +23,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
+
+Repurpose Igals blog post here. 
+Ideally updated to use remote Java SDK to stay remote first but otherwise untouched. 

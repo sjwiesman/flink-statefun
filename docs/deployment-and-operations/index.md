@@ -2,7 +2,7 @@
 title: Deployment and Operations
 nav-id: deployment-and-ops
 nav-pos: 5
-nav-title: 'Deployment and Operations'
+nav-title: '<i class="fa fa-sliders title appetizer" aria-hidden="true"></i> Deployment & Operations'
 nav-parent_id: root
 nav-show_overview: true 
 permalink: /deployment-and-operations/index.html

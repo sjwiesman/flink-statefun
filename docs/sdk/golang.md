@@ -1,8 +1,9 @@
 ---
-title: "Stateful Functions Home"
-nav-pos: 0
-nav-parent_id: hidden
-layout: home
+title: Golang SDK 
+nav-id: golang-sdk
+nav-pos: 1
+nav-title: GoLang
+nav-parent_id: sdk
 ---
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -22,3 +23,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
+
+Stateful functions are the building blocks of applications; they are atomic units of isolation, distribution, and persistence.
+As objects, they encapsulate the state of a single entity (e.g., a specific user, device, or session) and encode its behavior.
+Stateful functions can interact with each other, and external systems, through message passing.
+The GoLang SDK is supported as a [remote module]({{ site.baseurl}}/sdk/index.html#remote-module).

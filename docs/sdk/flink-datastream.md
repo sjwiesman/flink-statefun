@@ -1,7 +1,7 @@
 ---
 title: "SDK for Flink DataStream Integration"
 nav-id: flink-datastream-sdk
-nav-pos: 1001
+nav-pos: 1000
 nav-title: "Flink DataStream"
 nav-parent_id: sdk
 ---
@@ -151,6 +151,6 @@ StatefulFunctionEgressStreams egresses =
 {% endhighlight %}
 
 <div class="alert alert-info">
-  <strong>Attention:</strong> The setFlinkJobName method on StatefulFunctionsConfig does not have effect using this SDK.
+  <strong>Attention:</strong> The <b>setFlinkJobName</b> method on StatefulFunctionsConfig does not have effect using this SDK.
   You need to define the job name as you normally would via Flink's DataStream API.
 </div>

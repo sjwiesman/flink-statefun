@@ -2,7 +2,7 @@
 title: I/O Module 
 nav-id: io-module
 nav-pos: 4
-nav-title: 'I/O Module'
+nav-title: '<i class="fa fa-random title appetizer" aria-hidden="true"></i> I/O Module'
 nav-parent_id: root
 nav-show_overview: true 
 permalink: /io-module/index.html
@@ -27,19 +27,22 @@ under the License.
 -->
 
 Stateful Functions' I/O modules allow functions to receive and send messages to external systems.
-Based on the concept of Ingress (input) and Egress (output) points, and built on top of the Apache Flink® connector ecosystem, I/O modules enable functions to interact with the outside world through the style of message passing.
+Based on the concept of Ingress (input) and Egress (output) points, and built on top of the Apache Flink®
+connector ecosystem, I/O modules enable functions to interact with the outside world through the style of message passing.
 
 * This will be replaced by the TOC
 {:toc}
 
 ## Ingress
 
-An Ingress is an input point where data is consumed from an external system and forwarded to zero or more functions.
+An Ingress is an input point that consumes data from an external system and forwards each record to zero or more functions.
 It is defined via an ``IngressIdentifier`` and an ``IngressSpec``.
 
-An ingress identifier, similar to a function type, uniquely identifies an ingress by specifying its input type, a namespace, and a name.
+An ingress identifier, similar to a function type, uniquely identifies an ingress by specifying its input type,
+a namespace, and a name.
 
-The spec defines the details of how to connect to the external system, which is specific to each individual I/O module. Each identifier-spec pair is bound to the system inside an stateful function module.
+The spec defines the details of how to connect to the external system, which is specific to each individual I/O module.
+Each identifier-spec pair is bound to the system inside a stateful function module.
 
 <div class="codetabs" markdown="1">
 <div data-lang="Remote Module" markdown="1">
@@ -100,7 +103,8 @@ public class ModuleWithIngress implements StatefulFunctionModule {
 ## Router
 
 A router is a stateless operator that takes each record from an ingress and routes it to zero or more functions.
-Routers are bound to the system via a stateful function module, and unlike other components, an ingress may have any number of routers.
+Routers are bound to the system via a stateful function module, and unlike other components,
+an ingress may have any number of routers.
 
 <div class="codetabs" markdown="1">
 <div data-lang="Remote Module" markdown="1">
@@ -178,7 +182,7 @@ module:
         egresses:
           - egress:
               meta:
-                id: example/user-egress
+                id: example/egress
                 type: # egress type
               spec: # egress specific configurations
 {% endhighlight %}
@@ -223,8 +227,31 @@ public class ModuleWithEgress implements StatefulFunctionModule {
 </div>
 </div>
 
-Stateful functions may then message an egress the same way they message another function, passing the egress identifier as function type.
+Stateful functions may then message an egress the same way they message another function,
+passing the egress identifier as function type.
 
+<div class="codetabs" markdown="1">
+<div data-lang="Remote Module" markdown="1">
+<div class="codetabs" markdown="1">
+<div data-lang="Python" markdown="1">
+{% highlight python %}
+@functions.bind("example/function")
+def fn_outputting(context, msg):
+    """Simple function that forwards its message to an egress"""
+    context.pack_and_send_egress("example/egress", msg)
+{% endhighlight %}
+</div>
+<div data-lang="GoLang" markdown="1">
+{% highlight go %}
+// A simple function that forwards its message to an egress
+func FnOutputting(ctx *context.Context, runtime *statefun.Runtime, msg *any.Any) error {
+    return runtime.SendEgress(msg)
+}
+{% endhighlight %}
+</div>
+</div>
+</div>
+<div data-lang="Embedded Module" markdown="1">
 {% highlight java %}
 package org.apache.flink.statefun.docs.io.egress;
 
@@ -232,12 +259,14 @@ import org.apache.flink.statefun.docs.models.User;
 import org.apache.flink.statefun.sdk.Context;
 import org.apache.flink.statefun.sdk.StatefulFunction;
 
-/** A simple function that outputs messages to an egress. */
+/** A simple function that forwards its messages to an egress. */
 public class FnOutputting implements StatefulFunction {
 
     @Override
     public void invoke(Context context, Object input) {
-        context.send(Identifiers.EGRESS, new User());
+        context.send(Identifiers.EGRESS, input);
     }
 }
 {% endhighlight %}
+</div>
+</div>

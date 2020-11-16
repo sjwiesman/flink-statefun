@@ -1,9 +1,9 @@
 ---
-title: "Python Walkthrough"
-nav-id: python-walkthrough
-nav-title: 'Python Walkthrough'
-nav-parent_id: getting-started
-nav-pos: 2
+title: "Stateful Greeter"
+nav-id: statefun-greeter
+nav-title: 'Stateful Greeter'
+nav-parent_id: hands-on
+nav-pos: 1
 ---
 <!--
 Licensed to the Apache Software Foundation (ASF) under one

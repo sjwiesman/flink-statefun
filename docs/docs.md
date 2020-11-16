@@ -1,8 +1,8 @@
 ---
-title: "Stateful Functions Home"
+title: "Stateful Functions Documentation"
 nav-pos: 0
-nav-parent_id: hidden
-layout: home
+nav-title: '<i class="fa fa-home title" aria-hidden="true"></i> Home'
+nav-parent_id: root
 ---
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -22,3 +22,22 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
+
+<p style="margin: 30px 60px 0 60px;text-align: center" markdown="1">
+The Stateful Serverless Database (Or some other tag line)
+</p>
+
+<p class="text-center">
+    <img width="80%" alt="Probably Something Else" src="{{ site.baseurl }}/fig/concepts/arch_overview.svg"/>
+</p>
+
+Maybe a better image? 
+
+Here is some info on the docs!
+
+<div style="margin: 40px 0 0 0; position: relative; top: 20px;">
+<p>
+This documentation is for Apache Flink Stateful Functions version {{ site.version_title }}. These pages were built at: {% build_time %}.
+</p>
+</div>
+

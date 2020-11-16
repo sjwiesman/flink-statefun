@@ -1,8 +1,12 @@
 ---
-title: "Stateful Functions Home"
-nav-pos: 0
-nav-parent_id: hidden
-layout: home
+title: "Hands-On Stateful Functions"
+nav-id: hands-on
+nav-title: '<i class="fa fa-rocket title appetizer" aria-hidden="true"></i> Hands On'
+nav-parent_id: root
+section-break: true
+nav-show_overview: true 
+nav-pos: 1
+always-expand: true
 ---
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -22,3 +26,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
+
+These pages show code walkthroughs and practical examples. 
+They could be paired with videos and code available in some statefun-playgrounds repo. 
+I've outlined some simple pages we can add that reuse existing content but this is something we 
+can build up over time. 
+

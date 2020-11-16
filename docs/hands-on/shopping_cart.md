@@ -1,12 +1,9 @@
 ---
-title: Concepts
-nav-id: concepts
-nav-pos: 2
-nav-title: '<i class="fa fa-map-o title appetizer" aria-hidden="true"></i> Concepts'
-nav-parent_id: root
-nav-show_overview: false 
-permalink: /concepts/index.html
-always-expand: true
+title: "Shopping Cart"
+nav-id: shopping-cart
+nav-title: 'Shopping Cart'
+nav-parent_id: hands-on
+nav-pos: 3
 ---
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -26,3 +23,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
+
+Repurpose Gordons shopping cart here. 
+This would be a good place to show off serverless deployments with lambda. 

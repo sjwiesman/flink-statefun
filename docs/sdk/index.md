@@ -2,7 +2,7 @@
 title: SDK 
 nav-id: sdk
 nav-pos: 3
-nav-title: 'SDK'
+nav-title: '<i class="fa fa-code title appetizer" aria-hidden="true"></i> SDK'
 nav-parent_id: root
 nav-show_overview: true 
 permalink: /sdk/index.html
