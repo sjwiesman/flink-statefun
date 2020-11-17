@@ -11,6 +11,6 @@ jobs:
       - name: Set up Ruby 2.7
         uses: actions/setup-ruby@v1
         with:
-          java-version: 2.7
+          ruby-version: 2.7
       - name: Build
         run: ./tools/ci/docs.sh
