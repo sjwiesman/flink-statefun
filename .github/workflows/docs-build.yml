@@ -12,5 +12,9 @@ jobs:
         uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.7
+      - name: 🎩 Install Jekyll
+        run: |
+          sudo gem update --system
+          sudo bundle install
       - name: Build
         run: ./tools/ci/docs.sh
