@@ -12,5 +12,6 @@ jobs:
         run: |
           sudo gem update --system
           sudo gem install bundler -v 1.17.2
+          sudo bundle install --gemfile=docs/Gemfile
       - name: Build
         run: ./tools/ci/docs.sh
