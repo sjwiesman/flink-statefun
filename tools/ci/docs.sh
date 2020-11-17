@@ -30,7 +30,10 @@ if [ ! -f ${PROJECT_ROOT}/docs/build_docs.sh ]; then
     exit 1
 fi
 
-${PROJECT_ROOT}/docs/build_docs.sh -p &
+bundle exec jekyll serve --baseurl= --watch \
+		--config ${PROJECT_ROOT}/docs/_config.yml \
+		--source ${PROJECT_ROOT}/docs \
+		--destination ${PROJECT_ROOT}/docs/content &
 
 for i in `seq 1 30`;
 do
