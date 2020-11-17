@@ -30,7 +30,8 @@ if [ ! -f ${PROJECT_ROOT}/docs/build_docs.sh ]; then
     exit 1
 fi
 
-bundle exec jekyll serve --baseurl= --watch \
+bundle exec --gemfile=${PROJECT_ROOT}/docs/Gemfile \
+		jekyll serve --baseurl= --watch \
 		--config ${PROJECT_ROOT}/docs/_config.yml \
 		--source ${PROJECT_ROOT}/docs \
 		--destination ${PROJECT_ROOT}/docs/content &
