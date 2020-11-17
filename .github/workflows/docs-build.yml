@@ -8,13 +8,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Ruby 2.7
-        uses: actions/setup-ruby@v1
-        with:
-          ruby-version: 2.7
-      - name: 🎩 Install Jekyll
+      - name: 🎩 Install Bundler
         run: |
           sudo gem update --system
-          sudo bundle install
+          sudo gem install bundler -v 1.17.2
       - name: Build
         run: ./tools/ci/docs.sh
