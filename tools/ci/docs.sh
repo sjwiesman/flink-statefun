@@ -30,7 +30,9 @@ if [ ! -f ${PROJECT_ROOT}/docs/build_docs.sh ]; then
     exit 1
 fi
 
-sudo apt-get install -y gcc gcc-c++
+sudo apt update
+sudo apt install build-essential
+
 gem update --system
 gem install bundler -v 1.17.2
 
