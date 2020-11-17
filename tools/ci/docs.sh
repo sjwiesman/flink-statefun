@@ -30,7 +30,8 @@ if [ ! -f ${PROJECT_ROOT}/docs/build_docs.sh ]; then
     exit 1
 fi
 
-bundle update --bundler
+gem update --system
+gem install bundler -v 1.17.2
 CACHE_DIR=$HOME/gem_cache ${PROJECT_ROOT}/docs/build_docs.sh -p &
 
 for i in `seq 1 30`;
