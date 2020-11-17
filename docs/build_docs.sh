@@ -43,6 +43,7 @@ if [ "`command -v bundle`" == "" ]; then
 fi
 
 # Install Ruby dependencies locally
+echo "Installing ruby dependencies locally..."
 bundle install --path ${CACHE_DIR}
 
 DOCS_SRC=${DIR}
