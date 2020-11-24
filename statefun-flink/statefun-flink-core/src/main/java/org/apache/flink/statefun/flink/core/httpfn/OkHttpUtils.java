@@ -21,15 +21,17 @@ import javax.annotation.Nullable;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
+import org.apache.flink.annotation.Internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class OkHttpUtils {
+@Internal
+final public class OkHttpUtils {
   private static final Logger LOG = LoggerFactory.getLogger(OkHttpUtils.class);
 
   private OkHttpUtils() {}
 
-  static OkHttpClient newClient() {
+  static public OkHttpClient newClient() {
     Dispatcher dispatcher = new Dispatcher();
     dispatcher.setMaxRequestsPerHost(Integer.MAX_VALUE);
     dispatcher.setMaxRequests(Integer.MAX_VALUE);
@@ -45,7 +47,7 @@ final class OkHttpUtils {
         .build();
   }
 
-  static void closeSilently(@Nullable OkHttpClient client) {
+  public static void closeSilently(@Nullable OkHttpClient client) {
     if (client == null) {
       return;
     }

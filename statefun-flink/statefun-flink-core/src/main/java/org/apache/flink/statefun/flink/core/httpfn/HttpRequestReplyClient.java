@@ -32,6 +32,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.statefun.flink.core.metrics.RemoteInvocationMetrics;
 import org.apache.flink.statefun.flink.core.polyglot.generated.FromFunction;
 import org.apache.flink.statefun.flink.core.polyglot.generated.ToFunction;
@@ -39,14 +40,15 @@ import org.apache.flink.statefun.flink.core.reqreply.RequestReplyClient;
 import org.apache.flink.statefun.flink.core.reqreply.ToFunctionRequestSummary;
 import org.apache.flink.util.IOUtils;
 
-final class HttpRequestReplyClient implements RequestReplyClient {
+@Internal
+public final class HttpRequestReplyClient implements RequestReplyClient {
   private static final MediaType MEDIA_TYPE_BINARY = MediaType.parse("application/octet-stream");
 
   private final HttpUrl url;
   private final OkHttpClient client;
   private final BooleanSupplier isShutdown;
 
-  HttpRequestReplyClient(HttpUrl url, OkHttpClient client, BooleanSupplier isShutdown) {
+  public HttpRequestReplyClient(HttpUrl url, OkHttpClient client, BooleanSupplier isShutdown) {
     this.url = Objects.requireNonNull(url);
     this.client = Objects.requireNonNull(client);
     this.isShutdown = Objects.requireNonNull(isShutdown);
